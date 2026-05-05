@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>旅途记录</title>
     <style>
         :root {
@@ -104,9 +104,10 @@
         .spill:hover { opacity: .75; }
         .ptasks { display: none; border-top: 0.5px solid var(--border); }
         .ptasks.open { display: block; }
-        .tr { display: flex; align-items: center; gap: 8px; padding: 7px 12px; cursor: pointer; transition: background .1s; border-bottom: 0.5px solid var(--border); }
+        .tr { display: flex; align-items: center; gap: 8px; padding: 7px 12px; cursor: pointer; transition: all .2s; border-bottom: 0.5px solid var(--border); }
         .tr:last-child { border-bottom: none; }
         .tr:hover { background: var(--bg2); }
+        .tr.done-row { opacity: 0.7; transform: scale(0.98); }
         .chk { width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid var(--border2); flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all .15s; pointer-events: auto; }
         .chk.done { background: var(--blue); border-color: var(--blue); }
         .chk.done::after { content: ''; width: 5px; height: 3px; border-left: 1.5px solid #fff; border-bottom: 1.5px solid #fff; transform: rotate(-45deg) translateY(-1px); display: block; }
@@ -271,6 +272,50 @@
         .uo.sh { background: var(--red-bg); border-color: var(--red); color: var(--red-t); }
         .uo.sm { background: var(--amber-bg); border-color: var(--amber); color: var(--amber-t); }
         .uo.sl2 { background: var(--green-bg); border-color: var(--green); color: var(--green-t); }
+        .toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: #fff;
+            padding: 8px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            opacity: 0.9;
+            z-index: 999;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        .data-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .task-actions {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+            margin-left: auto;
+        }
+        .task-edit-btn, .task-del-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 0.5px solid var(--border2);
+            background: var(--bg);
+            font-size: 12px;
+            cursor: pointer;
+            color: var(--text2);
+            flex-shrink: 0;
+            transition: all .12s;
+        }
+        .task-edit-btn:hover { background: var(--blue-bg); color: var(--blue); border-color: var(--blue); }
+        .task-del-btn:hover { background: var(--red-bg); color: var(--red); border-color: var(--red); }
         @media(max-width:600px) {
             :root { --sw: 0px; --th: 44px; }
             .sidebar { display: none; }
@@ -280,6 +325,11 @@
             .fab-wrap { bottom: 14px; right: 14px; }
             .ach-stats-row { grid-template-columns: repeat(2, 1fr); gap: 6px; }
             .ach-badges-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
+            .task-edit-btn, .task-del-btn {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
         }
     </style>
 </head>
@@ -303,6 +353,7 @@
                 <button class="tbtn" data-view="notes">旅途所得</button>
                 <button class="tbtn" data-view="overdue">旅途拾遗</button>
                 <button class="tbtn" data-view="achievements">🏆 成就</button>
+                <button class="tbtn" data-view="data">📊 数据</button>
             </div>
         </div>
         <div class="body">
@@ -363,6 +414,12 @@
                     <div class="ach-section-title">📊 项目完成进度</div>
                     <div class="ach-progress-section" id="ach-progress-section"></div>
                 </div>
+                <div class="view" id="view-data">
+                    <div style="font-size:15px;font-weight:600;margin-bottom:14px;">📊 数据统计</div>
+                    <div class="data-stats" id="data-stats"></div>
+                    <div class="sl">完成趋势</div>
+                    <div id="data-recent" style="font-size:12px;color:var(--text2);"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -390,16 +447,16 @@
     </div>
     <script>
         (function() {
-            const DB_KEY = 'task_app_v5';
+            const DB_KEY = 'task_app_v8';
             const today = new Date(2026, 4, 5);
             let cY = today.getFullYear(), cM = today.getMonth();
             const DOW = ['日', '一', '二', '三', '四', '五', '六'];
             const MONTHS = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
             let fabOpen = false;
             let currentModalType = null;
+            let editingTaskId = null;
             let activePillBtn = null, activePillProjId = null;
             let selectedCalKey = null;
-            // 记录展开的项目 ID
             const expandedProjects = new Set();
 
             const DEFAULT_DATA = {
@@ -523,6 +580,18 @@
                 return Math.floor((today - dl) / (1000 * 60 * 60 * 24));
             }
 
+            function toast(msg) {
+                const t = document.createElement('div');
+                t.className = 'toast';
+                t.innerText = msg;
+                document.body.appendChild(t);
+                setTimeout(() => t.remove(), 2000);
+            }
+
+            function showAchievement(a) {
+                toast('🏆 解锁成就：' + a.name);
+            }
+
             // ==================== RENDER ====================
             function renderToday() {
                 const container = document.getElementById('view-today');
@@ -533,12 +602,12 @@
                 html += '<div class="sl">每日任务</div>';
                 dailyTasks.forEach(t => {
                     const pc = getProjectColor(t.projectId);
-                    html += '<div class="sc"><div class="stbar" style="background:' + pc + '"></div><div class="scb" data-task-id="' + t.id + '"><div class="chk' + (t.done ? ' done' : '') + '"></div><span class="tname' + (t.done ? ' done' : '') + '">' + t.name + '</span><span class="urg u-' + urgClass(t.urgency) + '">' + urgLabel(t.urgency) + '</span>' + (t.streak ? '<span class="streak">' + t.streak + '</span>' : '') + '</div></div>';
+                    html += '<div class="sc"><div class="stbar" style="background:' + pc + '"></div><div class="scb" data-task-id="' + t.id + '"><div class="chk' + (t.done ? ' done' : '') + '"></div><span class="tname' + (t.done ? ' done' : '') + '">' + t.name + '</span><span class="urg u-' + urgClass(t.urgency) + '">' + urgLabel(t.urgency) + '</span>' + (t.streak ? '<span class="streak">' + t.streak + '</span>' : '') + '<div class="task-actions"><button class="task-edit-btn" data-edit-task-id="' + t.id + '">✎</button><button class="task-del-btn" data-delete-task-id="' + t.id + '">✕</button></div></div></div>';
                 });
                 html += '<div class="sl">今日任务</div>';
                 todayTasks.forEach(t => {
                     const pc = getProjectColor(t.projectId);
-                    html += '<div class="sc"><div class="stbar" style="background:' + pc + '"></div><div class="scb" data-task-id="' + t.id + '"><div class="chk' + (t.done ? ' done' : '') + '"></div><span class="tname' + (t.done ? ' done' : '') + '">' + t.name + '</span><span class="urg u-' + urgClass(t.urgency) + '">' + urgLabel(t.urgency) + '</span></div></div>';
+                    html += '<div class="sc"><div class="stbar" style="background:' + pc + '"></div><div class="scb" data-task-id="' + t.id + '"><div class="chk' + (t.done ? ' done' : '') + '"></div><span class="tname' + (t.done ? ' done' : '') + '">' + t.name + '</span><span class="urg u-' + urgClass(t.urgency) + '">' + urgLabel(t.urgency) + '</span><div class="task-actions"><button class="task-edit-btn" data-edit-task-id="' + t.id + '">✎</button><button class="task-del-btn" data-delete-task-id="' + t.id + '">✕</button></div></div></div>';
                 });
                 html += '<div class="sl">进行中的项目</div>';
                 inProgressProjects.forEach(p => {
@@ -547,7 +616,7 @@
                     const isOpen = expandedProjects.has(p.id);
                     html += '<div class="pc"><div class="stbar" style="background:' + p.color + '"></div><div class="pbody"><div class="phdr" data-proj-id="' + p.id + '"><span class="chev' + (isOpen ? ' open' : '') + '">▶</span><span class="pname">' + p.name + '</span><span class="pmeta">' + doneC + '/' + pTasks.length + '</span></div><div class="ptasks' + (isOpen ? ' open' : '') + '">';
                     pTasks.forEach(t => {
-                        html += '<div class="tr" data-task-id="' + t.id + '"><div class="chk' + (t.done ? ' done' : '') + '"></div><span class="tname' + (t.done ? ' done' : '') + '">' + t.name + '</span><span class="urg u-' + urgClass(t.urgency) + '">' + urgLabel(t.urgency) + '</span></div>';
+                        html += '<div class="tr' + (t.done ? ' done-row' : '') + '" data-task-id="' + t.id + '"><div class="chk' + (t.done ? ' done' : '') + '"></div><span class="tname' + (t.done ? ' done' : '') + '">' + t.name + '</span><span class="urg u-' + urgClass(t.urgency) + '">' + urgLabel(t.urgency) + '</span><div class="task-actions"><button class="task-edit-btn" data-edit-task-id="' + t.id + '">✎</button><button class="task-del-btn" data-delete-task-id="' + t.id + '">✕</button></div></div>';
                     });
                     html += '</div></div></div>';
                 });
@@ -571,7 +640,7 @@
                     const isOpen = expandedProjects.has(p.id);
                     html += '<div class="pc"><div class="stbar" style="background:' + p.color + '"></div><div class="pbody"><div class="phdr" data-proj-id="' + p.id + '"><span class="chev' + (isOpen ? ' open' : '') + '">▶</span><span class="pname">' + p.name + '</span><button class="spill" style="background:' + sc.bg + ';color:' + sc.cl + '" data-proj-id="' + p.id + '">' + p.status + '</button><span class="pmeta">' + pTasks.length + ' 任务</span></div><div class="ptasks' + (isOpen ? ' open' : '') + '">';
                     pTasks.forEach(t => {
-                        html += '<div class="tr" data-task-id="' + t.id + '"><div class="chk' + (t.done ? ' done' : '') + '"></div><span class="tname' + (t.done ? ' done' : '') + '">' + t.name + '</span><span class="urg u-' + urgClass(t.urgency) + '">' + urgLabel(t.urgency) + '</span></div>';
+                        html += '<div class="tr' + (t.done ? ' done-row' : '') + '" data-task-id="' + t.id + '"><div class="chk' + (t.done ? ' done' : '') + '"></div><span class="tname' + (t.done ? ' done' : '') + '">' + t.name + '</span><span class="urg u-' + urgClass(t.urgency) + '">' + urgLabel(t.urgency) + '</span><div class="task-actions"><button class="task-edit-btn" data-edit-task-id="' + t.id + '">✎</button><button class="task-del-btn" data-delete-task-id="' + t.id + '">✕</button></div></div>';
                     });
                     html += '</div></div></div>';
                 });
@@ -579,7 +648,7 @@
                 if (orphan.length > 0) {
                     html += '<div class="sl">无项目的独立任务</div>';
                     orphan.forEach(t => {
-                        html += '<div class="sc"><div class="stbar" style="background:var(--pink)"></div><div class="scb" data-task-id="' + t.id + '"><div class="chk' + (t.done ? ' done' : '') + '"></div><span class="tname' + (t.done ? ' done' : '') + '">' + t.name + '</span><span class="urg u-' + urgClass(t.urgency) + '">' + urgLabel(t.urgency) + '</span></div></div>';
+                        html += '<div class="sc"><div class="stbar" style="background:var(--pink)"></div><div class="scb" data-task-id="' + t.id + '"><div class="chk' + (t.done ? ' done' : '') + '"></div><span class="tname' + (t.done ? ' done' : '') + '">' + t.name + '</span><span class="urg u-' + urgClass(t.urgency) + '">' + urgLabel(t.urgency) + '</span><div class="task-actions"><button class="task-edit-btn" data-edit-task-id="' + t.id + '">✎</button><button class="task-del-btn" data-delete-task-id="' + t.id + '">✕</button></div></div></div>';
                     });
                 }
                 container.innerHTML = html;
@@ -698,6 +767,35 @@
                 }
             }
 
+            function renderDataView() {
+                const doneTasks = db.tasks.filter(t => t.done);
+                const todayDone = doneTasks.filter(t => {
+                    if (!t.completedAt) return false;
+                    const dt = new Date(t.completedAt);
+                    return dt.getFullYear() === today.getFullYear() && dt.getMonth() === today.getMonth() && dt.getDate() === today.getDate();
+                }).length;
+                const weekDone = doneTasks.filter(t => {
+                    if (!t.completedAt) return false;
+                    const dt = new Date(t.completedAt);
+                    const dayOfWeek = today.getDay();
+                    const startOfWeek = new Date(today);
+                    startOfWeek.setDate(today.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1));
+                    startOfWeek.setHours(0, 0, 0, 0);
+                    return dt >= startOfWeek;
+                }).length;
+                const overdueFixed = db.completedOverdueTasks.length;
+                const totalDone = doneTasks.length;
+                document.getElementById('data-stats').innerHTML = `
+                    <div class="stat-c"><div class="stat-n">${todayDone}</div><div class="stat-l">今日完成</div></div>
+                    <div class="stat-c"><div class="stat-n">${weekDone}</div><div class="stat-l">本周完成</div></div>
+                    <div class="stat-c"><div class="stat-n">${overdueFixed}</div><div class="stat-l">逾期处理</div></div>
+                    <div class="stat-c"><div class="stat-n">${totalDone}</div><div class="stat-l">累计完成</div></div>
+                `;
+                const recent = doneTasks.slice(-5).reverse();
+                const recentHtml = recent.length ? recent.map(t => `<div style="margin-bottom:4px;">✅ ${t.name} <span style="color:var(--text3);font-size:10px;">${formatTime(t.completedAt)}</span></div>`).join('') : '<div style="color:var(--text3);">暂无最近完成记录</div>';
+                document.getElementById('data-recent').innerHTML = '<div style="margin-bottom:8px;font-weight:500;">最近完成</div>' + recentHtml;
+            }
+
             function renderSidebar() {
                 const container = document.getElementById('sidebar-projects');
                 let html = '';
@@ -747,6 +845,7 @@
                 renderNotes();
                 renderOverdue();
                 renderAchievements();
+                renderDataView();
                 renderSidebar();
                 renderCal();
             }
@@ -757,26 +856,45 @@
                 if (!t) return;
                 t.done = !t.done;
                 t.completedAt = t.done ? new Date().toISOString() : null;
+                toast(t.done ? '任务已完成' : '任务已取消完成');
                 checkAchievements();
                 saveDB();
                 refreshAll();
             }
 
+            function deleteTask(taskId) {
+                if (!confirm('确定删除该任务吗？')) return;
+                db.tasks = db.tasks.filter(t => t.id !== taskId);
+                saveDB();
+                refreshAll();
+                toast('任务已删除');
+            }
+
+            function editTask(taskId) {
+                openModal('edit-task', taskId);
+            }
+
             function checkAchievements() {
                 const doneTasks = db.tasks.filter(t => t.done);
-                [...db.achievements, ...db.customAchievements].forEach(a => {
+                const allAchievements = [...db.achievements, ...db.customAchievements];
+                allAchievements.forEach(a => {
                     if (a.unlocked) return;
-                    if (a.condition === 'finish1' && doneTasks.length >= 1) a.unlocked = true;
-                    if (a.condition === 'finish10' && doneTasks.length >= 10) a.unlocked = true;
-                    if (a.condition === 'finish50' && doneTasks.length >= 50) a.unlocked = true;
-                    if (a.condition === 'high5' && doneTasks.filter(t => t.urgency === 'high').length >= 5) a.unlocked = true;
-                    if (a.condition === 'read3' && doneTasks.filter(t => getProjectName(t.projectId) === '阅读计划').length >= 3) a.unlocked = true;
+                    let shouldUnlock = false;
+                    if (a.condition === 'finish1' && doneTasks.length >= 1) shouldUnlock = true;
+                    if (a.condition === 'finish10' && doneTasks.length >= 10) shouldUnlock = true;
+                    if (a.condition === 'finish50' && doneTasks.length >= 50) shouldUnlock = true;
+                    if (a.condition === 'high5' && doneTasks.filter(t => t.urgency === 'high').length >= 5) shouldUnlock = true;
+                    if (a.condition === 'read3' && doneTasks.filter(t => getProjectName(t.projectId) === '阅读计划').length >= 3) shouldUnlock = true;
                     if (a.condition === 'projDone') {
-                        if (db.projects.filter(p => { const pt = db.tasks.filter(t => t.projectId === p.id); return pt.length > 0 && pt.every(t => t.done); }).length >= 1) a.unlocked = true;
+                        if (db.projects.filter(p => { const pt = db.tasks.filter(t => t.projectId === p.id); return pt.length > 0 && pt.every(t => t.done); }).length >= 1) shouldUnlock = true;
                     }
-                    if (a.condition === 'rustHalf' && doneTasks.filter(t => getProjectName(t.projectId) === '学习 Rust').length >= 3) a.unlocked = true;
-                    if (a.condition === 'fit3' && doneTasks.filter(t => getProjectName(t.projectId) === '健身记录').length >= 3) a.unlocked = true;
-                    if (a.condition === 'overdueFix' && db.completedOverdueTasks.length >= 3) a.unlocked = true;
+                    if (a.condition === 'rustHalf' && doneTasks.filter(t => getProjectName(t.projectId) === '学习 Rust').length >= 3) shouldUnlock = true;
+                    if (a.condition === 'fit3' && doneTasks.filter(t => getProjectName(t.projectId) === '健身记录').length >= 3) shouldUnlock = true;
+                    if (a.condition === 'overdueFix' && db.completedOverdueTasks.length >= 3) shouldUnlock = true;
+                    if (shouldUnlock) {
+                        a.unlocked = true;
+                        showAchievement(a);
+                    }
                 });
                 saveDB();
             }
@@ -787,6 +905,7 @@
                 t.done = true;
                 t.completedAt = new Date().toISOString();
                 db.completedOverdueTasks.push({ name: t.name, urgency: t.urgency, projectId: t.projectId, projectName: getProjectName(t.projectId), solvedAt: new Date().toISOString() });
+                toast('逾期任务已处理');
                 checkAchievements();
                 saveDB();
                 refreshAll();
@@ -810,6 +929,24 @@
             // ==================== EVENT DELEGATION ====================
             document.addEventListener('click', function(e) {
                 const target = e.target;
+
+                // 任务编辑
+                const editBtn = target.closest('.task-edit-btn');
+                if (editBtn) {
+                    e.stopPropagation();
+                    const taskId = editBtn.dataset.editTaskId;
+                    if (taskId) { editTask(taskId); }
+                    return;
+                }
+                // 任务删除
+                const delBtn = target.closest('.task-del-btn');
+                if (delBtn) {
+                    e.stopPropagation();
+                    const taskId = delBtn.dataset.deleteTaskId;
+                    if (taskId) { deleteTask(taskId); }
+                    return;
+                }
+
                 const taskRow = target.closest('[data-task-id]');
                 if (taskRow && !target.closest('.phdr') && !target.closest('.spill')) {
                     const taskId = taskRow.dataset.taskId;
@@ -966,56 +1103,119 @@
                 project: '<div class="mf"><label>项目名称</label><input type="text" id="mf-proj-name" placeholder="输入项目名称..."></div><div class="mf"><label>状态</label><select id="mf-proj-status"><option>未开始</option><option>进行中</option><option>暂存</option></select></div><div class="mf"><label>备注</label><textarea id="mf-proj-desc" placeholder="项目说明..."></textarea></div>',
                 badge: '<div class="mf"><label>勋章图标 (emoji)</label><input type="text" id="mf-badge-icon" placeholder="例如 🏆" maxlength="4"></div><div class="mf"><label>勋章名称</label><input type="text" id="mf-badge-name" placeholder="输入勋章名称..."></div><div class="mf"><label>描述</label><input type="text" id="mf-badge-desc" placeholder="解锁条件或描述..."></div>'
             };
-            const modalTitles = { 'task': '添加任务', 'note': '添加笔记', 'project': '新建项目', 'badge': '自定义勋章' };
+            const modalTitles = { 'task': '添加任务', 'note': '添加笔记', 'project': '新建项目', 'badge': '自定义勋章', 'edit-task': '编辑任务' };
 
-            window.openModal = function(type) {
+            window.openModal = function(type, taskId) {
                 currentModalType = type;
-                document.getElementById('mt').textContent = modalTitles[type] || '添加';
-                document.getElementById('mb').innerHTML = modalTemplates[type] || '';
+                editingTaskId = (type === 'edit-task') ? taskId : null;
+                const title = modalTitles[type] || '添加';
+                document.getElementById('mt').textContent = title;
+                const template = (type === 'edit-task') ? modalTemplates['task'] : modalTemplates[type];
+                document.getElementById('mb').innerHTML = template || '';
                 document.getElementById('mo').classList.add('show');
-                if (type === 'task') {
+
+                if ((type === 'task' || type === 'edit-task') && template) {
                     const btns = document.querySelectorAll('#mb .uo');
                     if (btns.length >= 2) btns[1].classList.add('sm');
-                    if (selectedCalKey) {
-                        const dateEl = document.getElementById('mf-task-date');
-                        if (dateEl) {
-                            const parts = selectedCalKey.split('-');
-                            if (parts.length === 3) {
-                                const y = parseInt(parts[0]), m = parseInt(parts[1]) - 1, d = parseInt(parts[2]);
-                                const dt = new Date(y, m, d);
-                                dateEl.value = dt.toISOString().split('T')[0];
-                            }
+
+                    if (type === 'edit-task' && taskId) {
+                        const task = db.tasks.find(t => t.id === taskId);
+                        if (task) {
+                            const nameEl = document.getElementById('mf-task-name');
+                            const projEl = document.getElementById('mf-task-proj');
+                            const dateEl = document.getElementById('mf-task-date');
+                            if (nameEl) nameEl.value = task.name;
+                            if (projEl) projEl.value = task.projectId || '';
+                            if (dateEl && task.deadline) dateEl.value = task.deadline;
+                            const urgBtns = document.querySelectorAll('#mb .uo');
+                            urgBtns.forEach(b => {
+                                b.classList.remove('sh', 'sm', 'sl2');
+                                if (b.textContent.includes('紧急') && task.urgency === 'high') b.classList.add('sh');
+                                if (b.textContent.includes('中') && task.urgency === 'mid') b.classList.add('sm');
+                                if (b.textContent.includes('低') && task.urgency === 'low') b.classList.add('sl2');
+                            });
                         }
+                    }
+
+                    const nameInput = document.getElementById('mf-task-name');
+                    if (nameInput) {
+                        nameInput.focus();
+                        nameInput.addEventListener('keydown', function(e) {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                saveModal();
+                            }
+                        });
+                    }
+                }
+                if (type === 'note') {
+                    const textarea = document.getElementById('mf-note-content');
+                    if (textarea) {
+                        textarea.focus();
+                        textarea.addEventListener('keydown', function(e) {
+                            if (e.key === 'Enter' && e.ctrlKey) {
+                                e.preventDefault();
+                                saveModal();
+                            }
+                        });
                     }
                 }
             };
-            window.closeModal = function() { document.getElementById('mo').classList.remove('show'); currentModalType = null; };
-            window.closeModalOverlay = function(e) { if (e.target === document.getElementById('mo')) { document.getElementById('mo').classList.remove('show'); currentModalType = null; } };
-            window.selectUrgency = function(btn, u) { btn.closest('.urg-sel').querySelectorAll('.uo').forEach(b => { b.className = 'uo'; }); btn.classList.add('s' + u[0]); };
+
+            window.closeModal = function() { 
+                document.getElementById('mo').classList.remove('show'); 
+                currentModalType = null; 
+                editingTaskId = null;
+            };
+            window.closeModalOverlay = function(e) { 
+                if (e.target === document.getElementById('mo')) { 
+                    document.getElementById('mo').classList.remove('show'); 
+                    currentModalType = null;
+                    editingTaskId = null;
+                } 
+            };
+            window.selectUrgency = function(btn, u) { 
+                btn.closest('.urg-sel').querySelectorAll('.uo').forEach(b => { b.className = 'uo'; }); 
+                btn.classList.add('s' + u[0]); 
+            };
 
             window.saveModal = function() {
-                if (currentModalType === 'task') {
+                if (currentModalType === 'task' || currentModalType === 'edit-task') {
                     const nameEl = document.getElementById('mf-task-name');
                     const projEl = document.getElementById('mf-task-proj');
                     const dateEl = document.getElementById('mf-task-date');
                     const urgBtn = document.querySelector('#mb .uo.sh, #mb .uo.sm, #mb .uo.sl2');
                     const name = nameEl ? nameEl.value.trim() : '';
-                    if (!name) { alert('请输入任务名称'); closeModal(); return; }
+                    if (!name) { toast('请输入任务名称'); return; }
                     const urgency = urgBtn ? (urgBtn.classList.contains('sh') ? 'high' : urgBtn.classList.contains('sm') ? 'mid' : 'low') : 'mid';
                     const projectId = projEl ? projEl.value || null : null;
                     const deadline = dateEl && dateEl.value ? dateEl.value : null;
-                    const newTask = { id: genId(), name, urgency, projectId, done: false, daily: false, streak: '', createdAt: new Date().toISOString(), completedAt: null, deadline };
-                    db.tasks.push(newTask);
-                    if (deadline) {
-                        const d = new Date(deadline + 'T00:00:00');
-                        const key = ck(d.getFullYear(), d.getMonth(), d.getDate());
-                        if (!db.calTasks[key]) db.calTasks[key] = [];
-                        db.calTasks[key].push({ name, urgency });
-                    } else if (selectedCalKey) {
-                        if (!db.calTasks[selectedCalKey]) db.calTasks[selectedCalKey] = [];
-                        db.calTasks[selectedCalKey].push({ name, urgency });
+
+                    if (currentModalType === 'edit-task' && editingTaskId) {
+                        const task = db.tasks.find(t => t.id === editingTaskId);
+                        if (task) {
+                            task.name = name;
+                            task.urgency = urgency;
+                            task.projectId = projectId;
+                            task.deadline = deadline;
+                            toast('任务已更新');
+                        }
+                    } else {
+                        const newTask = { id: genId(), name, urgency, projectId, done: false, daily: false, streak: '', createdAt: new Date().toISOString(), completedAt: null, deadline };
+                        db.tasks.push(newTask);
+                        if (deadline) {
+                            const d = new Date(deadline + 'T00:00:00');
+                            const key = ck(d.getFullYear(), d.getMonth(), d.getDate());
+                            if (!db.calTasks[key]) db.calTasks[key] = [];
+                            db.calTasks[key].push({ name, urgency });
+                        } else if (selectedCalKey) {
+                            if (!db.calTasks[selectedCalKey]) db.calTasks[selectedCalKey] = [];
+                            db.calTasks[selectedCalKey].push({ name, urgency });
+                        }
+                        toast('任务已添加');
                     }
                     selectedCalKey = null;
+                    editingTaskId = null;
                     saveDB();
                     refreshAll();
                     closeModal();
@@ -1023,7 +1223,7 @@
                     const contentEl = document.getElementById('mf-note-content');
                     const projEl = document.getElementById('mf-note-proj');
                     const content = contentEl ? contentEl.value.trim() : '';
-                    if (!content) { alert('请输入笔记内容'); closeModal(); return; }
+                    if (!content) { toast('请输入笔记内容'); return; }
                     const projectId = projEl ? projEl.value || null : null;
                     const proj = projectId ? getProject(projectId) : null;
                     const tag = proj ? '# ' + proj.name : '# 笔记';
@@ -1031,33 +1231,36 @@
                     db.notes.unshift({ id: genId(), content, tag, color, createdAt: new Date().toISOString(), projectId });
                     saveDB();
                     refreshAll();
+                    toast('笔记已保存');
                     closeModal();
                 } else if (currentModalType === 'project') {
                     const nameEl = document.getElementById('mf-proj-name');
                     const statusEl = document.getElementById('mf-proj-status');
                     const name = nameEl ? nameEl.value.trim() : '';
-                    if (!name) { alert('请输入项目名称'); closeModal(); return; }
+                    if (!name) { toast('请输入项目名称'); return; }
                     const status = statusEl ? statusEl.value : '未开始';
                     const colors = ['var(--green)', 'var(--amber)', 'var(--blue)', 'var(--purple)', 'var(--pink)', 'var(--red)'];
                     const color = colors[Math.floor(Math.random() * colors.length)];
                     db.projects.push({ id: genId(), name, color, status });
                     saveDB();
                     refreshAll();
+                    toast('项目已创建');
                     closeModal();
                 } else if (currentModalType === 'badge') {
                     const iconEl = document.getElementById('mf-badge-icon');
                     const nameEl = document.getElementById('mf-badge-name');
                     const descEl = document.getElementById('mf-badge-desc');
                     const name = nameEl ? nameEl.value.trim() : '';
-                    if (!name) { alert('请输入勋章名称'); closeModal(); return; }
+                    if (!name) { toast('请输入勋章名称'); return; }
                     const icon = iconEl ? (iconEl.value.trim() || '🏅') : '🏅';
                     const desc = descEl ? (descEl.value.trim() || '') : '';
                     db.customAchievements.push({ id: 'custom_' + genId(), icon, name, desc, condition: 'custom', unlocked: true });
                     saveDB();
                     refreshAll();
+                    toast('勋章已添加');
                     closeModal();
                 }
-                if (currentModalType === 'task') selectedCalKey = null;
+                if (currentModalType === 'task' || currentModalType === 'edit-task') selectedCalKey = null;
             };
 
             function init() { checkAchievements(); refreshAll(); renderCal(); document.getElementById('cal-det').style.display = 'none'; }
