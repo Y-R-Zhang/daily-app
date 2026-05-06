@@ -563,6 +563,8 @@
             border: 0.5px solid var(--border);
             border-radius: var(--r);
             overflow: hidden;
+            position: relative;
+            z-index: 1;
         }
         .cdh {
             padding: 10px 14px;
@@ -571,6 +573,8 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            position: relative;
+            z-index: 2;
         }
         .cdh-date {
             font-size: 13px;
@@ -579,12 +583,20 @@
         }
         .cdh-add {
             font-size: 11px;
-            padding: 3px 10px;
+            padding: 6px 14px;
             border-radius: 20px;
             border: 0.5px solid var(--border2);
             background: none;
             color: var(--text2);
             transition: all .12s;
+            min-height: 32px;
+            min-width: 80px;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .cdh-add:active {
+            transform: scale(0.95);
+            background: var(--bg3);
         }
         .cdh-add:hover {
             background: var(--bg3);
