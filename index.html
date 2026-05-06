@@ -1345,6 +1345,31 @@
             resize: vertical;
             min-height: 70px;
         }
+        .picker-trigger {
+            width: 100%;
+            padding: 8px 11px;
+            border: 0.5px solid var(--border2);
+            border-radius: var(--rsm);
+            background: var(--bg2);
+            color: var(--text);
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: border-color .15s;
+        }
+        .picker-trigger:active {
+            border-color: var(--blue);
+            background: var(--bg3);
+        }
+        .trigger-arrow {
+            color: var(--text3);
+            font-size: 12px;
+        }
+        .trigger-icon {
+            color: var(--text3);
+        }
         .mbtns {
             display: flex;
             gap: 8px;
@@ -1722,7 +1747,7 @@
             <div class="content">
                 <div class="view active" id="view-today"></div>
                 <div class="view" id="view-overview"></div>
-                <div class="view" id="view-calendar"><div class="cal-nav"><button class="cnbtn" onclick="calNav(-1)">‹</button><div class="cal-m" id="cal-m"></div><button class="cnbtn" onclick="calNav(1)">›</button></div><div class="cal-grid" id="cal-grid"></div><div class="cal-detail" id="cal-det" style="display:none"><div class="cdh"><span class="cdh-date" id="cdh-date"></span><button class="cdh-add" onclick="window.openModal(\'task\', null, selectedCalKey)">+ 添加任务</button></div><div id="cdh-body"></div></div></div>
+                <div class="view" id="view-calendar"><div class="cal-nav"><button class="cnbtn" onclick="calNav(-1)">‹</button><div class="cal-m" id="cal-m"></div><button class="cnbtn" onclick="calNav(1)">›</button></div><div class="cal-grid" id="cal-grid"></div><div class="cal-detail" id="cal-det" style="display:none"><div class="cdh"><span class="cdh-date" id="cdh-date"></span><button class="cdh-add">+ 添加任务</button></div><div id="cdh-body"></div></div></div>
                 <div class="view" id="view-notes"></div>
                 <div class="view" id="view-overdue"><div class="od-hero"><div style="font-size:28px;line-height:1;flex-shrink:0">🗂</div><div><div class="od-num" id="od-n">0</div><div class="od-sub">项逾期未完成的任务</div></div><div class="od-oldest"><div class="od-oldest-l">最久逾期</div><div class="od-oldest-n" id="od-max">0天</div></div></div><div class="stats-row"><div class="stat-c"><div class="stat-n" id="od-h" style="color:var(--red)">0</div><div class="stat-l">🔴 紧急</div></div><div class="stat-c"><div class="stat-n" id="od-m" style="color:var(--amber)">0</div><div class="stat-l">🟡 中等</div></div><div class="stat-c"><div class="stat-n" id="od-l" style="color:var(--green)">0</div><div class="stat-l">🟢 低优先</div></div></div><div id="od-list"></div></div>
                 <div class="view" id="view-achievements"><div class="ach-banner"><div class="ach-banner-icon">🏆</div><div class="ach-banner-info"><div class="ach-banner-num" id="ach-total-badges">0</div><div class="ach-banner-sub">枚徽章已解锁</div></div><div class="ach-banner-right"><div class="ach-banner-pct" id="ach-pct">0%</div><div class="ach-banner-pctl">成就达成率</div></div></div><div class="ach-stats-row"><div class="ach-stat-c"><span class="ach-stat-icon">✅</span><div class="ach-stat-n" id="ach-completed">0</div><div class="ach-stat-l">累计完成</div></div><div class="ach-stat-c"><span class="ach-stat-icon">🔥</span><div class="ach-stat-n" id="ach-streak">0</div><div class="ach-stat-l">最长连续(天)</div></div><div class="ach-stat-c"><span class="ach-stat-icon">🎯</span><div class="ach-stat-n" id="ach-high-done">0</div><div class="ach-stat-l">紧急任务完成</div></div><div class="ach-stat-c"><span class="ach-stat-icon">📁</span><div class="ach-stat-n" id="ach-proj-done">0</div><div class="ach-stat-l">完整项目</div></div></div><div class="ach-section-title">🏅 成就徽章</div><div class="ach-badges-grid" id="ach-badges-grid"></div><button class="add-badge-btn" onclick="openModal('badge')">➕ 添加自定义勋章</button><div class="ach-section-title">📋 已完成任务清单</div><div id="ach-completed-list" class="completed-list"></div><div class="ach-section-title">📊 项目完成进度</div><div class="ach-progress-section" id="ach-progress-section"></div></div>
@@ -2030,7 +2055,7 @@
         function deleteCalTask(key, idx) { if (!confirm('删除这个日历任务吗？')) return; const tasks = db.calTasks[key]; if (!tasks || !tasks[idx]) return; const ct = tasks[idx]; if (ct.taskId) { db.tasks = db.tasks.filter(t => t.id !== ct.taskId); } tasks.splice(idx, 1); if (!tasks.length) delete db.calTasks[key]; saveDB(); refreshAll(); if (selectedCalKey === key) { const [yr, mo, dt] = key.split('-'); const el = document.querySelector(`.cday[data-cal-key="${key}"]`); if (el) selDay(el, parseInt(dt), parseInt(mo) - 1, parseInt(yr), key); } }
         function editCalTask(key, idx) { const tasks = db.calTasks[key]; if (!tasks || !tasks[idx]) return; const ct = tasks[idx]; if (ct.taskId) { openModal('edit-task', ct.taskId); } }
 
-        function selDay(el, num, mo, yr, key) { document.querySelectorAll('.cday').forEach(c => c.classList.remove('selected')); el.classList.add('selected'); selectedCalKey = key; document.getElementById('cal-det').style.display = 'block'; document.getElementById('cdh-date').textContent = yr + '年' + (mo + 1) + '月' + num + '日'; const body = document.getElementById('cdh-body'); const tasks = db.calTasks[key] || []; if (!tasks.length) { body.innerHTML = '<div class="cdempty">暂无安排，点击右侧按钮添加任务</div>'; return; } body.innerHTML = ''; const urgColorMap = { 'high': 'var(--red)', 'mid': 'var(--amber)', 'low': 'var(--green)' }; tasks.forEach((t, idx) => { const row = document.createElement('div'); row.className = 'tr' + (t.done ? ' done-row' : ''); const deadlineInfo = key === today.toISOString().split('T')[0] ? '<span class="task-due">今天截止</span>' : '<span class="task-due">' + key + '</span>'; const earlyCompleteTag = t.done && isEarlyCompleteForCal(t, key) ? '<span class="early-complete">🎉提前完成</span>' : ''; const barColor = urgColorMap[t.urgency] || 'var(--gray)'; row.innerHTML = `<div class="stbar" style="background:${barColor}"></div><div class="chk${t.done ? ' done' : ''}"></div><span class="tname${t.done ? ' done' : ''}">${t.name}</span><span class="urg u-${urgClass(t.urgency)}">${urgLabel(t.urgency)}</span>${deadlineInfo}${earlyCompleteTag}<div class="task-actions"><button class="task-edit-btn" onclick="window.editCalTask('${key}', ${idx})">✎</button><button class="task-del-btn" onclick="window.deleteCalTask('${key}', ${idx})">✕</button></div>`; row.addEventListener('click', function(e) { if (e.target.closest('.task-del-btn') || e.target.closest('.task-edit-btn')) return; toggleCalTaskDone(key, idx); }); body.appendChild(row); }); }
+        function selDay(el, num, mo, yr, key) { document.querySelectorAll('.cday').forEach(c => c.classList.remove('selected')); el.classList.add('selected'); selectedCalKey = key; document.getElementById('cal-det').style.display = 'block'; document.getElementById('cdh-date').textContent = yr + '年' + (mo + 1) + '月' + num + '日'; const body = document.getElementById('cdh-body'); const tasks = db.calTasks[key] || []; if (!tasks.length) { body.innerHTML = '<div class="cdempty">暂无安排，点击右侧按钮添加任务</div>'; return; } body.innerHTML = ''; const urgColorMap = { 'high': 'var(--red)', 'mid': 'var(--amber)', 'low': 'var(--green)' }; tasks.forEach((t, idx) => { const row = document.createElement('div'); row.className = 'tr' + (t.done ? ' done-row' : ''); const deadlineInfo = key === today.toISOString().split('T')[0] ? '<span class="task-due">今天截止</span>' : '<span class="task-due">' + key + '</span>'; const earlyCompleteTag = t.done && isEarlyCompleteForCal(t, key) ? '<span class="early-complete">🎉提前完成</span>' : ''; const barColor = urgColorMap[t.urgency] || 'var(--gray)'; row.innerHTML = `<div class="stbar" style="background:${barColor}"></div><div class="chk${t.done ? ' done' : ''}"></div><span class="tname${t.done ? ' done' : ''}">${t.name}</span><span class="urg u-${urgClass(t.urgency)}">${urgLabel(t.urgency)}</span>${deadlineInfo}${earlyCompleteTag}<div class="task-actions"><button class="cal-edit-btn" onclick="window.editCalTask('${key}', ${idx})">✎</button><button class="cal-del-btn" onclick="window.deleteCalTask('${key}', ${idx})">✕</button></div>`; row.addEventListener('click', function(e) { if (e.target.closest('.cal-del-btn') || e.target.closest('.cal-edit-btn')) return; toggleCalTaskDone(key, idx); }); body.appendChild(row); }); }
 
         document.addEventListener('click', function(e) {
             const target = e.target;
@@ -2060,7 +2085,7 @@
         window.calNav = function(dir) { cM += dir; if (cM > 11) { cM = 0; cY++; } else if (cM < 0) { cM = 11; cY--; } renderCal(); document.getElementById('cal-det').style.display = 'none'; selectedCalKey = null; };
 
         const modalTemplates = {
-            task: '<div class="mf"><label>任务名称</label><input type="text" id="mf-task-name" placeholder="输入任务名称..."></div><div class="mf"><label>紧急程度</label><div class="urg-sel"><button class="uo" onclick="selectUrgency(this,\'high\')">🔴 紧急</button><button class="uo sm" onclick="selectUrgency(this,\'mid\')">🟡 中</button><button class="uo" onclick="selectUrgency(this,\'low\')">🟢 低</button></div></div><div class="mf"><label>所属项目</label><select id="mf-task-proj"><option value="">（无项目）</option>' + db.projects.map(p => '<option value="' + p.id + '">' + p.name + '</option>').join('') + '</select></div><div class="mf"><label>每日任务</label><select id="mf-task-daily"><option value="0">否</option><option value="1">是</option></select></div><div class="mf"><label>截止日期</label><input type="date" id="mf-task-date"></div>',
+            task: '<div class="mf"><label>任务名称</label><input type="text" id="mf-task-name" placeholder="输入任务名称..."></div><div class="mf"><label>紧急程度</label><div class="urg-sel"><button class="uo" onclick="selectUrgency(this,\'high\')">🔴 紧急</button><button class="uo sm" onclick="selectUrgency(this,\'mid\')">🟡 中</button><button class="uo" onclick="selectUrgency(this,\'low\')">🟢 低</button></div></div><div class="mf"><label>所属项目</label><div id="mf-task-proj-trigger" class="picker-trigger"><span id="mf-task-proj-label">（无项目）</span><span class="trigger-arrow">▾</span></div></div><div class="mf"><label>每日任务</label><select id="mf-task-daily"><option value="0">否</option><option value="1">是</option></select></div><div class="mf"><label>截止日期</label><div id="mf-task-date-trigger" class="picker-trigger"><span id="mf-task-date-label">选择日期</span><span class="trigger-icon">📅</span></div></div>',
             note: '<div class="mf"><label>内容</label><textarea id="mf-note-content" placeholder="记录你的思路..."></textarea></div><div class="mf"><label>关联项目</label><select id="mf-note-proj"><option value="">（无）</option>' + db.projects.map(p => '<option value="' + p.id + '">' + p.name + '</option>').join('') + '</select></div>',
             project: '<div class="mf"><label>项目名称</label><input type="text" id="mf-proj-name" placeholder="输入项目名称..."></div><div class="mf"><label>状态</label><select id="mf-proj-status"><option>未开始</option><option>进行中</option><option>暂存</option><option>已完成</option><option>已归档</option></select></div><div class="mf"><label>备注</label><textarea id="mf-proj-desc" placeholder="项目说明..."></textarea></div>',
             badge: '<div class="mf"><label>勋章图标 (emoji)</label><input type="text" id="mf-badge-icon" placeholder="例如 🏆" maxlength="4"></div><div class="mf"><label>勋章名称</label><input type="text" id="mf-badge-name" placeholder="输入勋章名称..."></div><div class="mf"><label>描述</label><input type="text" id="mf-badge-desc" placeholder="解锁条件或描述..."></div>'
