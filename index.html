@@ -299,7 +299,7 @@
             flex-shrink: 0;
             margin-left: auto;
         }
-        .task-edit-btn, .task-del-btn {
+        .task-edit-btn, .task-del-btn, .proj-edit-btn, .proj-del-btn {
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -314,8 +314,8 @@
             flex-shrink: 0;
             transition: all .12s;
         }
-        .task-edit-btn:hover { background: var(--blue-bg); color: var(--blue); border-color: var(--blue); }
-        .task-del-btn:hover { background: var(--red-bg); color: var(--red); border-color: var(--red); }
+        .task-edit-btn:hover, .proj-edit-btn:hover { background: var(--blue-bg); color: var(--blue); border-color: var(--blue); }
+        .task-del-btn:hover, .proj-del-btn:hover { background: var(--red-bg); color: var(--red); border-color: var(--red); }
         @media(max-width:600px) {
             :root { --sw: 0px; --th: 44px; }
             .sidebar { display: none; }
@@ -325,7 +325,7 @@
             .fab-wrap { bottom: 14px; right: 14px; }
             .ach-stats-row { grid-template-columns: repeat(2, 1fr); gap: 6px; }
             .ach-badges-grid { grid-template-columns: repeat(2, 1fr); gap: 6px; }
-            .task-edit-btn, .task-del-btn {
+            .task-edit-btn, .task-del-btn, .proj-edit-btn, .proj-del-btn {
                 width: 30px;
                 height: 30px;
                 font-size: 14px;
@@ -447,7 +447,7 @@
     </div>
     <script>
         (function() {
-            const DB_KEY = 'task_app_v8';
+            const DB_KEY = 'task_app_v9';
             const today = new Date(2026, 4, 5);
             let cY = today.getFullYear(), cM = today.getMonth();
             const DOW = ['日', '一', '二', '三', '四', '五', '六'];
@@ -455,6 +455,7 @@
             let fabOpen = false;
             let currentModalType = null;
             let editingTaskId = null;
+            let editingProjectId = null;
             let activePillBtn = null, activePillProjId = null;
             let selectedCalKey = null;
             const expandedProjects = new Set();
@@ -496,14 +497,14 @@
                     { id: 'n3', content: '把番茄钟和跑步数据结合，分析生产力峰值时段。', tag: '# 每日', color: 'var(--amber)', createdAt: '2026-05-03T07:15', projectId: null },
                 ],
                 calTasks: {
-                    '2026-5-1': [{ name: '晨跑5km', urgency: 'mid' }, { name: '写日记', urgency: 'low' }],
-                    '2026-5-3': [{ name: '阅读计划·第二章', urgency: 'mid' }],
-                    '2026-5-5': [{ name: '完成Rust第3章', urgency: 'high' }, { name: '预约体检', urgency: 'mid' }, { name: '晨跑5km', urgency: 'mid' }],
-                    '2026-5-8': [{ name: '健身记录', urgency: 'low' }],
-                    '2026-5-12': [{ name: '所有权系统', urgency: 'high' }, { name: '读书笔记', urgency: 'low' }],
-                    '2026-5-18': [{ name: '结构体与枚举', urgency: 'mid' }],
-                    '2026-5-22': [{ name: '晨跑10km', urgency: 'low' }],
-                    '2026-5-28': [{ name: '写月度总结', urgency: 'mid' }],
+                    '2026-5-1': [{ name: '晨跑5km', urgency: 'mid', done: false }, { name: '写日记', urgency: 'low', done: false }],
+                    '2026-5-3': [{ name: '阅读计划·第二章', urgency: 'mid', done: false }],
+                    '2026-5-5': [{ name: '完成Rust第3章', urgency: 'high', done: false }, { name: '预约体检', urgency: 'mid', done: false }, { name: '晨跑5km', urgency: 'mid', done: false }],
+                    '2026-5-8': [{ name: '健身记录', urgency: 'low', done: false }],
+                    '2026-5-12': [{ name: '所有权系统', urgency: 'high', done: false }, { name: '读书笔记', urgency: 'low', done: false }],
+                    '2026-5-18': [{ name: '结构体与枚举', urgency: 'mid', done: false }],
+                    '2026-5-22': [{ name: '晨跑10km', urgency: 'low', done: false }],
+                    '2026-5-28': [{ name: '写月度总结', urgency: 'mid', done: false }],
                 },
                 achievements: [
                     { id: 'a1', icon: '🏅', name: '初出茅庐', desc: '完成第1个任务', condition: 'finish1', unlocked: false },
@@ -614,7 +615,7 @@
                     const pTasks = db.tasks.filter(t => t.projectId === p.id);
                     const doneC = pTasks.filter(t => t.done).length;
                     const isOpen = expandedProjects.has(p.id);
-                    html += '<div class="pc"><div class="stbar" style="background:' + p.color + '"></div><div class="pbody"><div class="phdr" data-proj-id="' + p.id + '"><span class="chev' + (isOpen ? ' open' : '') + '">▶</span><span class="pname">' + p.name + '</span><span class="pmeta">' + doneC + '/' + pTasks.length + '</span></div><div class="ptasks' + (isOpen ? ' open' : '') + '">';
+                    html += '<div class="pc"><div class="stbar" style="background:' + p.color + '"></div><div class="pbody"><div class="phdr" data-proj-id="' + p.id + '"><span class="chev' + (isOpen ? ' open' : '') + '">▶</span><span class="pname">' + p.name + '</span><span class="pmeta">' + doneC + '/' + pTasks.length + '</span><div class="task-actions"><button class="proj-edit-btn" data-edit-proj-id="' + p.id + '">✎</button><button class="proj-del-btn" data-delete-proj-id="' + p.id + '">✕</button></div></div><div class="ptasks' + (isOpen ? ' open' : '') + '">';
                     pTasks.forEach(t => {
                         html += '<div class="tr' + (t.done ? ' done-row' : '') + '" data-task-id="' + t.id + '"><div class="chk' + (t.done ? ' done' : '') + '"></div><span class="tname' + (t.done ? ' done' : '') + '">' + t.name + '</span><span class="urg u-' + urgClass(t.urgency) + '">' + urgLabel(t.urgency) + '</span><div class="task-actions"><button class="task-edit-btn" data-edit-task-id="' + t.id + '">✎</button><button class="task-del-btn" data-delete-task-id="' + t.id + '">✕</button></div></div>';
                     });
@@ -638,7 +639,7 @@
                     const pTasks = db.tasks.filter(t => t.projectId === p.id);
                     const sc = scMap[p.status] || scMap['未开始'];
                     const isOpen = expandedProjects.has(p.id);
-                    html += '<div class="pc"><div class="stbar" style="background:' + p.color + '"></div><div class="pbody"><div class="phdr" data-proj-id="' + p.id + '"><span class="chev' + (isOpen ? ' open' : '') + '">▶</span><span class="pname">' + p.name + '</span><button class="spill" style="background:' + sc.bg + ';color:' + sc.cl + '" data-proj-id="' + p.id + '">' + p.status + '</button><span class="pmeta">' + pTasks.length + ' 任务</span></div><div class="ptasks' + (isOpen ? ' open' : '') + '">';
+                    html += '<div class="pc"><div class="stbar" style="background:' + p.color + '"></div><div class="pbody"><div class="phdr" data-proj-id="' + p.id + '"><span class="chev' + (isOpen ? ' open' : '') + '">▶</span><span class="pname">' + p.name + '</span><button class="spill" style="background:' + sc.bg + ';color:' + sc.cl + '" data-proj-id="' + p.id + '">' + p.status + '</button><span class="pmeta">' + pTasks.length + ' 任务</span><div class="task-actions"><button class="proj-edit-btn" data-edit-proj-id="' + p.id + '">✎</button><button class="proj-del-btn" data-delete-proj-id="' + p.id + '">✕</button></div></div><div class="ptasks' + (isOpen ? ' open' : '') + '">';
                     pTasks.forEach(t => {
                         html += '<div class="tr' + (t.done ? ' done-row' : '') + '" data-task-id="' + t.id + '"><div class="chk' + (t.done ? ' done' : '') + '"></div><span class="tname' + (t.done ? ' done' : '') + '">' + t.name + '</span><span class="urg u-' + urgClass(t.urgency) + '">' + urgLabel(t.urgency) + '</span><div class="task-actions"><button class="task-edit-btn" data-edit-task-id="' + t.id + '">✎</button><button class="task-del-btn" data-delete-task-id="' + t.id + '">✕</button></div></div>';
                     });
@@ -874,6 +875,21 @@
                 openModal('edit-task', taskId);
             }
 
+            function editProject(projectId) {
+                openModal('edit-project', projectId);
+            }
+
+            function deleteProject(projectId) {
+                const proj = getProject(projectId);
+                if (!proj) return;
+                if (!confirm(`确定删除项目“${proj.name}”吗？关联任务将变为独立任务。`)) return;
+                db.tasks.forEach(t => { if (t.projectId === projectId) t.projectId = null; });
+                db.projects = db.projects.filter(p => p.id !== projectId);
+                saveDB();
+                refreshAll();
+                toast('项目已删除');
+            }
+
             function checkAchievements() {
                 const doneTasks = db.tasks.filter(t => t.done);
                 const allAchievements = [...db.achievements, ...db.customAchievements];
@@ -926,6 +942,32 @@
                 refreshAll();
             }
 
+            function toggleCalTaskDone(key, idx) {
+                const tasks = db.calTasks[key];
+                if (!tasks || !tasks[idx]) return;
+                tasks[idx].done = !tasks[idx].done;
+                saveDB();
+                selDay(document.querySelector('.cday.selected'), parseInt(document.querySelector('.cday.selected').dataset.calNum), parseInt(document.querySelector('.cday.selected').dataset.calMo), parseInt(document.querySelector('.cday.selected').dataset.calYr), key);
+                renderCal();
+            }
+
+            function deleteCalTask(key, idx) {
+                if (!confirm('删除这个日历任务吗？')) return;
+                const tasks = db.calTasks[key];
+                if (!tasks || !tasks[idx]) return;
+                tasks.splice(idx, 1);
+                if (tasks.length === 0) delete db.calTasks[key];
+                saveDB();
+                const selEl = document.querySelector('.cday.selected');
+                if (selEl) {
+                    const num = parseInt(selEl.dataset.calNum), mo = parseInt(selEl.dataset.calMo), yr = parseInt(selEl.dataset.calYr);
+                    selDay(selEl, num, mo, yr, key);
+                } else {
+                    document.getElementById('cdh-body').innerHTML = '<div class="cdempty">暂无安排</div>';
+                }
+                renderCal();
+            }
+
             // ==================== EVENT DELEGATION ====================
             document.addEventListener('click', function(e) {
                 const target = e.target;
@@ -946,6 +988,22 @@
                     if (taskId) { deleteTask(taskId); }
                     return;
                 }
+                // 项目编辑
+                const projEditBtn = target.closest('.proj-edit-btn');
+                if (projEditBtn) {
+                    e.stopPropagation();
+                    const projId = projEditBtn.dataset.editProjId;
+                    if (projId) { editProject(projId); }
+                    return;
+                }
+                // 项目删除
+                const projDelBtn = target.closest('.proj-del-btn');
+                if (projDelBtn) {
+                    e.stopPropagation();
+                    const projId = projDelBtn.dataset.deleteProjId;
+                    if (projId) { deleteProject(projId); }
+                    return;
+                }
 
                 const taskRow = target.closest('[data-task-id]');
                 if (taskRow && !target.closest('.phdr') && !target.closest('.spill')) {
@@ -957,17 +1015,17 @@
                     }
                 }
                 const phdr = target.closest('.phdr');
-                if (phdr && !target.closest('.spill')) {
+                if (phdr && !target.closest('.spill') && !target.closest('.proj-edit-btn') && !target.closest('.proj-del-btn')) {
                     const projId = phdr.dataset.projId;
                     if (projId) {
                         if (expandedProjects.has(projId)) expandedProjects.delete(projId);
                         else expandedProjects.add(projId);
+                        const chev = phdr.querySelector('.chev');
+                        const ptasks = phdr.nextElementSibling;
+                        if (chev) chev.classList.toggle('open');
+                        if (ptasks && ptasks.classList.contains('ptasks')) ptasks.classList.toggle('open');
+                        return;
                     }
-                    const chev = phdr.querySelector('.chev');
-                    const ptasks = phdr.nextElementSibling;
-                    if (chev) chev.classList.toggle('open');
-                    if (ptasks && ptasks.classList.contains('ptasks')) ptasks.classList.toggle('open');
-                    return;
                 }
                 if (target.classList.contains('spill')) {
                     const projId = target.dataset.projId;
@@ -1050,29 +1108,30 @@
                 body.innerHTML = '';
                 tasks.forEach((t, idx) => {
                     const row = document.createElement('div');
-                    row.className = 'tr';
-                    row.innerHTML = '<div class="chk"></div><span class="tname">' + t.name + '</span><span class="urg u-' + urgClass(t.urgency) + '">' + urgLabel(t.urgency) + '</span>';
-                    row.dataset.calTaskIdx = idx;
+                    row.className = 'tr' + (t.done ? ' done-row' : '');
+                    row.innerHTML = `
+                        <div class="chk${t.done ? ' done' : ''}"></div>
+                        <span class="tname${t.done ? ' done' : ''}">${t.name}</span>
+                        <span class="urg u-${urgClass(t.urgency)}">${urgLabel(t.urgency)}</span>
+                        <div class="task-actions">
+                            <button class="task-del-btn" data-cal-del-key="${key}" data-cal-del-idx="${idx}">✕</button>
+                        </div>
+                    `;
+                    row.addEventListener('click', function(e) {
+                        if (e.target.closest('.task-del-btn')) return;
+                        toggleCalTaskDone(key, idx);
+                    });
                     body.appendChild(row);
                 });
             }
 
-            document.getElementById('cdh-body').addEventListener('click', function(e) {
-                const tr = e.target.closest('.tr');
-                if (!tr) return;
-                const idx = parseInt(tr.dataset.calTaskIdx);
-                if (isNaN(idx) || !selectedCalKey) return;
-                const ts = db.calTasks[selectedCalKey];
-                if (ts && ts[idx] !== undefined) {
-                    ts.splice(idx, 1);
-                    if (ts.length === 0) delete db.calTasks[selectedCalKey];
-                    saveDB();
-                    const selEl = document.querySelector('.cday.selected');
-                    if (selEl) {
-                        const num = parseInt(selEl.dataset.calNum), mo = parseInt(selEl.dataset.calMo), yr = parseInt(selEl.dataset.calYr);
-                        selDay(selEl, num, mo, yr, selectedCalKey);
-                    }
-                    renderCal();
+            document.addEventListener('click', function(e) {
+                const delCal = e.target.closest('.task-del-btn[data-cal-del-key]');
+                if (delCal) {
+                    e.stopPropagation();
+                    const key = delCal.dataset.calDelKey;
+                    const idx = parseInt(delCal.dataset.calDelIdx);
+                    if (key && !isNaN(idx)) deleteCalTask(key, idx);
                 }
             });
 
@@ -1100,26 +1159,25 @@
             const modalTemplates = {
                 task: '<div class="mf"><label>任务名称</label><input type="text" id="mf-task-name" placeholder="输入任务名称..."></div><div class="mf"><label>紧急程度</label><div class="urg-sel"><button class="uo" onclick="selectUrgency(this,\'high\')">🔴 紧急</button><button class="uo sm" onclick="selectUrgency(this,\'mid\')">🟡 中</button><button class="uo" onclick="selectUrgency(this,\'low\')">🟢 低</button></div></div><div class="mf"><label>所属项目</label><select id="mf-task-proj"><option value="">（无项目）</option>' + db.projects.map(p => '<option value="' + p.id + '">' + p.name + '</option>').join('') + '</select></div><div class="mf"><label>截止日期</label><input type="date" id="mf-task-date"></div>',
                 note: '<div class="mf"><label>内容</label><textarea id="mf-note-content" placeholder="记录你的思路..."></textarea></div><div class="mf"><label>关联项目</label><select id="mf-note-proj"><option value="">（无）</option>' + db.projects.map(p => '<option value="' + p.id + '">' + p.name + '</option>').join('') + '</select></div>',
-                project: '<div class="mf"><label>项目名称</label><input type="text" id="mf-proj-name" placeholder="输入项目名称..."></div><div class="mf"><label>状态</label><select id="mf-proj-status"><option>未开始</option><option>进行中</option><option>暂存</option></select></div><div class="mf"><label>备注</label><textarea id="mf-proj-desc" placeholder="项目说明..."></textarea></div>',
+                project: '<div class="mf"><label>项目名称</label><input type="text" id="mf-proj-name" placeholder="输入项目名称..."></div><div class="mf"><label>状态</label><select id="mf-proj-status"><option>未开始</option><option>进行中</option><option>暂存</option><option>已完成</option></select></div><div class="mf"><label>备注</label><textarea id="mf-proj-desc" placeholder="项目说明..."></textarea></div>',
                 badge: '<div class="mf"><label>勋章图标 (emoji)</label><input type="text" id="mf-badge-icon" placeholder="例如 🏆" maxlength="4"></div><div class="mf"><label>勋章名称</label><input type="text" id="mf-badge-name" placeholder="输入勋章名称..."></div><div class="mf"><label>描述</label><input type="text" id="mf-badge-desc" placeholder="解锁条件或描述..."></div>'
             };
-            const modalTitles = { 'task': '添加任务', 'note': '添加笔记', 'project': '新建项目', 'badge': '自定义勋章', 'edit-task': '编辑任务' };
+            const modalTitles = { 'task': '添加任务', 'note': '添加笔记', 'project': '新建项目', 'badge': '自定义勋章', 'edit-task': '编辑任务', 'edit-project': '编辑项目' };
 
-            window.openModal = function(type, taskId) {
+            window.openModal = function(type, id) {
                 currentModalType = type;
-                editingTaskId = (type === 'edit-task') ? taskId : null;
-                const title = modalTitles[type] || '添加';
-                document.getElementById('mt').textContent = title;
-                const template = (type === 'edit-task') ? modalTemplates['task'] : modalTemplates[type];
+                editingTaskId = (type === 'edit-task') ? id : null;
+                editingProjectId = (type === 'edit-project') ? id : null;
+                document.getElementById('mt').textContent = modalTitles[type] || '添加';
+                const template = (type === 'edit-task') ? modalTemplates['task'] : (type === 'edit-project' ? modalTemplates['project'] : modalTemplates[type]);
                 document.getElementById('mb').innerHTML = template || '';
                 document.getElementById('mo').classList.add('show');
 
                 if ((type === 'task' || type === 'edit-task') && template) {
                     const btns = document.querySelectorAll('#mb .uo');
                     if (btns.length >= 2) btns[1].classList.add('sm');
-
-                    if (type === 'edit-task' && taskId) {
-                        const task = db.tasks.find(t => t.id === taskId);
+                    if (type === 'edit-task' && id) {
+                        const task = db.tasks.find(t => t.id === id);
                         if (task) {
                             const nameEl = document.getElementById('mf-task-name');
                             const projEl = document.getElementById('mf-task-proj');
@@ -1136,29 +1194,23 @@
                             });
                         }
                     }
-
                     const nameInput = document.getElementById('mf-task-name');
-                    if (nameInput) {
-                        nameInput.focus();
-                        nameInput.addEventListener('keydown', function(e) {
-                            if (e.key === 'Enter') {
-                                e.preventDefault();
-                                saveModal();
-                            }
-                        });
+                    if (nameInput) { nameInput.focus(); nameInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); saveModal(); } }); }
+                }
+                if (type === 'edit-project' && template && id) {
+                    const proj = getProject(id);
+                    if (proj) {
+                        const nameEl = document.getElementById('mf-proj-name');
+                        const statusEl = document.getElementById('mf-proj-status');
+                        const descEl = document.getElementById('mf-proj-desc');
+                        if (nameEl) nameEl.value = proj.name;
+                        if (statusEl) statusEl.value = proj.status;
+                        if (descEl) descEl.value = '';
                     }
                 }
                 if (type === 'note') {
                     const textarea = document.getElementById('mf-note-content');
-                    if (textarea) {
-                        textarea.focus();
-                        textarea.addEventListener('keydown', function(e) {
-                            if (e.key === 'Enter' && e.ctrlKey) {
-                                e.preventDefault();
-                                saveModal();
-                            }
-                        });
-                    }
+                    if (textarea) { textarea.focus(); textarea.addEventListener('keydown', function(e) { if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); saveModal(); } }); }
                 }
             };
 
@@ -1166,12 +1218,14 @@
                 document.getElementById('mo').classList.remove('show'); 
                 currentModalType = null; 
                 editingTaskId = null;
+                editingProjectId = null;
             };
             window.closeModalOverlay = function(e) { 
                 if (e.target === document.getElementById('mo')) { 
                     document.getElementById('mo').classList.remove('show'); 
                     currentModalType = null;
                     editingTaskId = null;
+                    editingProjectId = null;
                 } 
             };
             window.selectUrgency = function(btn, u) { 
@@ -1207,10 +1261,10 @@
                             const d = new Date(deadline + 'T00:00:00');
                             const key = ck(d.getFullYear(), d.getMonth(), d.getDate());
                             if (!db.calTasks[key]) db.calTasks[key] = [];
-                            db.calTasks[key].push({ name, urgency });
+                            db.calTasks[key].push({ name, urgency, done: false });
                         } else if (selectedCalKey) {
                             if (!db.calTasks[selectedCalKey]) db.calTasks[selectedCalKey] = [];
-                            db.calTasks[selectedCalKey].push({ name, urgency });
+                            db.calTasks[selectedCalKey].push({ name, urgency, done: false });
                         }
                         toast('任务已添加');
                     }
@@ -1218,6 +1272,34 @@
                     editingTaskId = null;
                     saveDB();
                     refreshAll();
+                    closeModal();
+                } else if (currentModalType === 'edit-project' && editingProjectId) {
+                    const nameEl = document.getElementById('mf-proj-name');
+                    const statusEl = document.getElementById('mf-proj-status');
+                    const name = nameEl ? nameEl.value.trim() : '';
+                    if (!name) { toast('请输入项目名称'); return; }
+                    const proj = getProject(editingProjectId);
+                    if (proj) {
+                        proj.name = name;
+                        proj.status = statusEl ? statusEl.value : proj.status;
+                        toast('项目已更新');
+                        saveDB();
+                        refreshAll();
+                    }
+                    editingProjectId = null;
+                    closeModal();
+                } else if (currentModalType === 'project') {
+                    const nameEl = document.getElementById('mf-proj-name');
+                    const statusEl = document.getElementById('mf-proj-status');
+                    const name = nameEl ? nameEl.value.trim() : '';
+                    if (!name) { toast('请输入项目名称'); return; }
+                    const status = statusEl ? statusEl.value : '未开始';
+                    const colors = ['var(--green)', 'var(--amber)', 'var(--blue)', 'var(--purple)', 'var(--pink)', 'var(--red)'];
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    db.projects.push({ id: genId(), name, color, status });
+                    saveDB();
+                    refreshAll();
+                    toast('项目已创建');
                     closeModal();
                 } else if (currentModalType === 'note') {
                     const contentEl = document.getElementById('mf-note-content');
@@ -1232,19 +1314,6 @@
                     saveDB();
                     refreshAll();
                     toast('笔记已保存');
-                    closeModal();
-                } else if (currentModalType === 'project') {
-                    const nameEl = document.getElementById('mf-proj-name');
-                    const statusEl = document.getElementById('mf-proj-status');
-                    const name = nameEl ? nameEl.value.trim() : '';
-                    if (!name) { toast('请输入项目名称'); return; }
-                    const status = statusEl ? statusEl.value : '未开始';
-                    const colors = ['var(--green)', 'var(--amber)', 'var(--blue)', 'var(--purple)', 'var(--pink)', 'var(--red)'];
-                    const color = colors[Math.floor(Math.random() * colors.length)];
-                    db.projects.push({ id: genId(), name, color, status });
-                    saveDB();
-                    refreshAll();
-                    toast('项目已创建');
                     closeModal();
                 } else if (currentModalType === 'badge') {
                     const iconEl = document.getElementById('mf-badge-icon');
