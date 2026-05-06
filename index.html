@@ -2285,18 +2285,22 @@
 
         // 修改紧急程度选择器样式
         window.selectUrgency = function(btn, u) {
-            btn.closest('.urg-sel').querySelectorAll('.uo').forEach(b => {
+            var sel = btn.closest('.urg-sel');
+            if (!sel) return;
+            var btns = sel.querySelectorAll('.uo');
+            for (var i = 0; i < btns.length; i++) {
+                var b = btns[i];
                 b.classList.remove('sh', 'sm', 'sl2');
                 b.style.background = 'var(--bg)';
                 b.style.borderColor = 'var(--border)';
                 b.style.color = 'var(--text)';
-            });
-            const colors = {
+            }
+            var colors = {
                 'high': { bg: 'var(--red-bg)', border: 'var(--red)', text: 'var(--red-t)' },
                 'mid': { bg: 'var(--amber-bg)', border: 'var(--amber)', text: 'var(--amber-t)' },
                 'low': { bg: 'var(--green-bg)', border: 'var(--green)', text: 'var(--green-t)' }
             };
-            const c = colors[u];
+            var c = colors[u];
             btn.style.background = c.bg;
             btn.style.borderColor = c.border;
             btn.style.color = c.text;
