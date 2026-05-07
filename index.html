@@ -14,10 +14,10 @@
             --text: #1a1a18;
             --text2: #5c5c58;
             --text3: #9c9c96;
-            --r: 10px;
-            --rsm: 6px;
+            --r: 12px;
+            --rsm: 8px;
             --sw: 172px;
-            --th: 48px;
+            --th: 56px;
             --green: #1D9E75;
             --green-bg: #EAF3DE;
             --green-t: #2a6b1a;
@@ -83,8 +83,8 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', 'PingFang SC', 'Microsoft YaHei', sans-serif;
             background: var(--bg2);
             color: var(--text);
-            font-size: 14px;
-            line-height: 1.5;
+            font-size: 16px;
+            line-height: 1.6;
         }
         button {
             font-family: inherit;
@@ -137,9 +137,9 @@
             display: none;
         }
         .tbtn {
-            font-size: 12px;
-            padding: 4px 9px;
-            border-radius: 6px;
+            font-size: 14px;
+            padding: 8px 14px;
+            border-radius: 8px;
             border: none;
             color: var(--text2);
             background: none;
@@ -207,7 +207,7 @@
         }
         .view {
             display: none;
-            padding: 14px 14px 70px;
+            padding: 14px 14px 100px;
         }
         .view.active {
             display: block;
@@ -328,10 +328,10 @@
             flex-shrink: 0;
         }
         .chk {
-            width: 15px;
-            height: 15px;
+            width: 24px;
+            height: 24px;
             border-radius: 50%;
-            border: 1.5px solid var(--border2);
+            border: 2px solid var(--border2);
             flex-shrink: 0;
             display: flex;
             align-items: center;
@@ -342,18 +342,29 @@
         .chk.done {
             background: var(--blue);
             border-color: var(--blue);
+            animation: chkBounce 0.4s ease;
         }
         .chk.done::after {
             content: '';
-            width: 5px;
-            height: 3px;
-            border-left: 1.5px solid #fff;
-            border-bottom: 1.5px solid #fff;
+            width: 8px;
+            height: 5px;
+            border-left: 2px solid #fff;
+            border-bottom: 2px solid #fff;
             transform: rotate(-45deg) translateY(-1px);
             display: block;
+            animation: checkDraw 0.3s ease;
+        }
+        @keyframes chkBounce {
+            0%, 100% { transform: scale(1); }
+            30% { transform: scale(1.15); }
+            60% { transform: scale(0.95); }
+        }
+        @keyframes checkDraw {
+            0% { width: 0; height: 0; opacity: 0; }
+            50% { opacity: 1; }
         }
         .tname {
-            font-size: 12.5px;
+            font-size: 15px;
             color: var(--text);
             flex: 1;
             min-width: 0;
@@ -367,8 +378,8 @@
             color: var(--text3);
         }
         .urg {
-            font-size: 10px;
-            padding: 1px 6px;
+            font-size: 12px;
+            padding: 4px 10px;
             border-radius: 20px;
             white-space: nowrap;
             flex-shrink: 0;
@@ -564,7 +575,7 @@
             border-radius: var(--r);
             overflow: hidden;
             position: relative;
-            z-index: 1;
+            z-index: 110;
         }
         .cdh {
             padding: 10px 14px;
@@ -803,6 +814,20 @@
             border-radius: 20px;
             color: var(--text3);
             display: inline-block;
+        }
+        .nc-images {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin: 6px 0;
+        }
+        .nc-img {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 1px solid var(--border);
         }
         .nc-del {
             position: absolute;
@@ -1188,12 +1213,14 @@
             gap: 6px;
             align-items: flex-end;
             opacity: 0;
+            visibility: hidden;
             pointer-events: none;
             transform: translateY(8px);
             transition: all .18s;
         }
         .fab-menu.open {
             opacity: 1;
+            visibility: visible;
             pointer-events: auto;
             transform: translateY(0);
         }
@@ -1203,30 +1230,30 @@
             gap: 8px;
         }
         .fab-lbl {
-            font-size: 12px;
+            font-size: 14px;
             color: var(--text);
             background: var(--bg);
             border: 0.5px solid var(--border);
-            padding: 4px 11px;
+            padding: 8px 16px;
             border-radius: var(--rsm);
             box-shadow: 0 2px 8px rgba(0, 0, 0, .08);
             white-space: nowrap;
         }
         .fab-ic {
-            width: 32px;
-            height: 32px;
+            width: 44px;
+            height: 44px;
             border-radius: 50%;
             border: none;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 14px;
+            font-size: 18px;
             color: #fff;
             flex-shrink: 0;
         }
         .fab-main {
-            width: 40px;
-            height: 40px;
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
             background: var(--text);
             border: none;
@@ -1637,12 +1664,12 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 26px;
-            height: 26px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             border: 0.5px solid var(--border2);
             background: var(--bg);
-            font-size: 12px;
+            font-size: 16px;
             cursor: pointer;
             color: var(--text2);
             flex-shrink: 0;
@@ -1659,6 +1686,28 @@
             background: var(--red-bg);
             color: var(--red);
             border-color: var(--red);
+        }
+        .mf-trigger {
+            width: 100%;
+            padding: 8px 11px;
+            border: 0.5px solid var(--border2);
+            border-radius: var(--rsm);
+            background: var(--bg2);
+            color: var(--text);
+            font-size: 13px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .mf-trigger:hover {
+            background: var(--bg3);
+        }
+        .mf-trigger::after {
+            content: '▾';
+            font-size: 12px;
+            color: var(--text3);
+            margin-left: 8px;
         }
         @media(max-width:600px) {
             :root {
@@ -1678,7 +1727,7 @@
                 font-size: 11px;
             }
             .view {
-                padding: 12px 12px 80px;
+                padding: 12px 12px 100px;
             }
             .fab-wrap {
                 bottom: 14px;
@@ -1726,7 +1775,7 @@
                 <div class="view" id="view-notes"></div>
                 <div class="view" id="view-overdue"><div class="od-hero"><div style="font-size:28px;line-height:1;flex-shrink:0">🗂</div><div><div class="od-num" id="od-n">0</div><div class="od-sub">项逾期未完成的任务</div></div><div class="od-oldest"><div class="od-oldest-l">最久逾期</div><div class="od-oldest-n" id="od-max">0天</div></div></div><div class="stats-row"><div class="stat-c"><div class="stat-n" id="od-h" style="color:var(--red)">0</div><div class="stat-l">🔴 紧急</div></div><div class="stat-c"><div class="stat-n" id="od-m" style="color:var(--amber)">0</div><div class="stat-l">🟡 中等</div></div><div class="stat-c"><div class="stat-n" id="od-l" style="color:var(--green)">0</div><div class="stat-l">🟢 低优先</div></div></div><div id="od-list"></div></div>
                 <div class="view" id="view-achievements"><div class="ach-banner"><div class="ach-banner-icon">🏆</div><div class="ach-banner-info"><div class="ach-banner-num" id="ach-total-badges">0</div><div class="ach-banner-sub">枚徽章已解锁</div></div><div class="ach-banner-right"><div class="ach-banner-pct" id="ach-pct">0%</div><div class="ach-banner-pctl">成就达成率</div></div></div><div class="ach-stats-row"><div class="ach-stat-c"><span class="ach-stat-icon">✅</span><div class="ach-stat-n" id="ach-completed">0</div><div class="ach-stat-l">累计完成</div></div><div class="ach-stat-c"><span class="ach-stat-icon">🔥</span><div class="ach-stat-n" id="ach-streak">0</div><div class="ach-stat-l">最长连续(天)</div></div><div class="ach-stat-c"><span class="ach-stat-icon">🎯</span><div class="ach-stat-n" id="ach-high-done">0</div><div class="ach-stat-l">紧急任务完成</div></div><div class="ach-stat-c"><span class="ach-stat-icon">📁</span><div class="ach-stat-n" id="ach-proj-done">0</div><div class="ach-stat-l">完整项目</div></div></div><div class="ach-section-title">🏅 成就徽章</div><div class="ach-badges-grid" id="ach-badges-grid"></div><button class="add-badge-btn" onclick="openModal('badge')">➕ 添加自定义勋章</button><div class="ach-section-title">📋 已完成任务清单</div><div id="ach-completed-list" class="completed-list"></div><div class="ach-section-title">📊 项目完成进度</div><div class="ach-progress-section" id="ach-progress-section"></div></div>
-                <div class="view" id="view-data"><div style="font-size:15px;font-weight:600;margin-bottom:14px;">📊 数据统计</div><div class="data-stats" id="data-stats"></div><div class="sl">完成趋势</div><div id="data-recent" style="font-size:12px;color:var(--text2);"></div></div>
+                <div class="view" id="view-data"><div style="font-size:15px;font-weight:600;margin-bottom:14px">📊 数据统计</div><div class="data-stats" id="data-stats"></div><div class="sl">完成趋势</div><div id="data-recent" style="font-size:12px;color:var(--text2);"></div><div class="sl" style="margin-top:24px">💾 数据管理</div><div style="display:flex;gap:8px;margin-bottom:14px"><button class="mbtn data-export-btn" style="flex:1;background:var(--blue);color:#fff;" onclick="exportData()">导出数据</button><button class="mbtn data-import-btn" style="flex:1;" onclick="importData()">导入数据</button></div><input type="file" id="import-file" accept=".json" style="display:none;" onchange="handleFileImport(event)"></div>
             </div>
         </div>
     </div>
@@ -1760,13 +1809,14 @@
     <script>
     (function() {
         const DB_KEY = 'task_app_final_v2';
-        const today = new Date(2026, 4, 5);
+        const today = new Date();
         let cY = today.getFullYear(), cM = today.getMonth();
         const DOW = ['日', '一', '二', '三', '四', '五', '六'];
         const MONTHS = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
         let fabOpen = false, currentModalType = null, editingTaskId = null, editingProjectId = null;
         let activePillBtn = null, activePillProjId = null;
         let selectedCalKey = null;
+        let activeFilter = null; // 当前筛选: null=全部, 'daily'=每日, 'important'=重要, 'study'=学习, 或项目ID
         const expandedProjects = new Set();
         const todayCollapsed = { overdue: false, todayDue: false, habits: false, upcoming: false, unscheduled: false };
 
@@ -1925,27 +1975,94 @@
             const archivedProjects = db.projects.filter(p => p.status === '已归档');
             const inProg = activeProjects.filter(p => p.status === '进行中' || p.status === '暂存').length;
             const comp = activeProjects.filter(p => p.status === '已完成').length;
-            let html = `<div style="font-size:13px;color:var(--text2);margin-bottom:14px">5月 · ${inProg}个进行中 · ${comp}个已完成</div>`;
+            
+            // 筛选标签栏 (移动端友好)
+            let html = `<div class="filter-chips" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:12px;">
+                <div class="filter-chip${activeFilter === null ? ' active' : ''}" data-filter="null" style="flex-shrink:0;padding:6px 12px;border-radius:20px;background:var(--bg2);font-size:13px;cursor:pointer;">全部</div>
+                <div class="filter-chip${activeFilter === 'daily' ? ' active' : ''}" data-filter="daily" style="flex-shrink:0;padding:6px 12px;border-radius:20px;background:var(--bg2);font-size:13px;cursor:pointer;"># 每日</div>
+                <div class="filter-chip${activeFilter === 'important' ? ' active' : ''}" data-filter="important" style="flex-shrink:0;padding:6px 12px;border-radius:20px;background:var(--bg2);font-size:13px;cursor:pointer;"># 重要</div>
+                <div class="filter-chip${activeFilter === 'study' ? ' active' : ''}" data-filter="study" style="flex-shrink:0;padding:6px 12px;border-radius:20px;background:var(--bg2);font-size:13px;cursor:pointer;"># 学习</div>`;
+            activeProjects.forEach(p => {
+                html += `<div class="filter-chip${activeFilter === p.id ? ' active' : ''}" data-filter="${p.id}" style="flex-shrink:0;padding:6px 12px;border-radius:20px;background:var(--bg2);font-size:13px;cursor:pointer;">${p.name}</div>`;
+            });
+            html += '</div>';
+            
+            html += `<div style="font-size:13px;color:var(--text2);margin-bottom:14px">${today.getMonth()+1}月 · ${inProg}个进行中 · ${comp}个已完成</div>`;
+            
             const scMap = { '进行中': { bg: 'var(--green-bg)', cl: 'var(--green-t)' }, '暂存': { bg: 'var(--amber-bg)', cl: 'var(--amber-t)' }, '已完成': { bg: 'var(--blue-bg)', cl: 'var(--blue-t)' }, '未开始': { bg: 'var(--gray-bg)', cl: 'var(--gray-t)' }, '已归档': { bg: 'var(--gray-bg)', cl: 'var(--gray-t)' } };
+            
+            // 定义筛选函数
+            const filterTask = function(t) {
+                if (!activeFilter) return true;
+                if (activeFilter === 'daily') return t.daily;
+                if (activeFilter === 'important') return t.urgency === 'high';
+                if (activeFilter === 'study') return getProjectName(t.projectId) === '学习 Rust' || getProjectName(t.projectId) === '阅读计划';
+                return t.projectId === activeFilter;
+            };
+            
+            const filterProject = function(p) {
+                if (!activeFilter) return true;
+                if (['daily', 'important', 'study'].includes(activeFilter)) return true;
+                return p.id === activeFilter;
+            };
+            
             [...activeProjects, ...archivedProjects].forEach(p => {
-                const pTasks = db.tasks.filter(t => t.projectId === p.id);
+                if (!filterProject(p)) return;
+                
+                const pTasks = db.tasks.filter(t => t.projectId === p.id && filterTask(t));
+                if (!pTasks.length && activeFilter && activeFilter !== p.id) return;
+                
                 const sc = scMap[p.status] || scMap['未开始'];
                 const isOpen = expandedProjects.has(p.id);
                 html += `<div class="pc"><div class="stbar" style="background:${p.color}"></div><div class="pbody"><div class="phdr" data-proj-id="${p.id}"><span class="chev${isOpen ? ' open' : ''}">▶</span><span class="pname">${p.name}</span><button class="spill" style="background:${sc.bg};color:${sc.cl}" data-proj-id="${p.id}">${p.status}</button><span class="pmeta">${pTasks.length} 任务</span><div class="task-actions"><button class="proj-edit-btn" data-edit-proj-id="${p.id}">✎</button><button class="proj-del-btn" data-delete-proj-id="${p.id}">✕</button></div></div><div class="ptasks${isOpen ? ' open' : ''}">`;
                 pTasks.forEach(t => { html += `<div class="tr${t.done ? ' done-row' : ''}" data-task-id="${t.id}"><div class="chk${t.done ? ' done' : ''}"></div><span class="tname${t.done ? ' done' : ''}">${t.name}</span><span class="urg u-${urgClass(t.urgency)}">${urgLabel(t.urgency)}</span><div class="task-actions"><button class="task-edit-btn" data-edit-task-id="${t.id}">✎</button><button class="task-del-btn" data-delete-task-id="${t.id}">✕</button></div></div>`; });
                 html += '</div></div></div>';
             });
-            const orphan = db.tasks.filter(t => !t.projectId && !t.daily);
+            
+            const orphan = db.tasks.filter(t => !t.projectId && !t.daily && filterTask(t));
             if (orphan.length) { html += '<div class="sl">无项目的独立任务</div>'; orphan.forEach(t => { html += `<div class="sc"><div class="stbar" style="background:var(--pink)"></div><div class="scb" data-task-id="${t.id}"><div class="chk${t.done ? ' done' : ''}"></div><span class="tname${t.done ? ' done' : ''}">${t.name}</span><span class="urg u-${urgClass(t.urgency)}">${urgLabel(t.urgency)}</span><div class="task-actions"><button class="task-edit-btn" data-edit-task-id="${t.id}">✎</button><button class="task-del-btn" data-delete-task-id="${t.id}">✕</button></div></div></div>`; }); }
             container.innerHTML = html;
+            
+            // 添加筛选标签点击事件
+            const filterChips = container.querySelectorAll('.filter-chip');
+            filterChips.forEach(chip => {
+                chip.addEventListener('click', function() {
+                    const filter = chip.dataset.filter;
+                    activeFilter = filter === 'null' ? null : filter;
+                    renderOverview();
+                });
+                if (chip.classList.contains('active')) {
+                    chip.style.background = 'var(--blue)';
+                    chip.style.color = '#fff';
+                }
+            });
         }
 
         function renderNotes() {
             const container = document.getElementById('view-notes');
             let html = '<div style="font-size:13px;color:var(--text2);margin-bottom:14px">旅途所得 · 记录思路与灵感</div><div class="ng">';
-            db.notes.forEach(n => { html += `<div class="nc"><div class="nc-b" style="background:${n.color}"></div><div class="nc-i"><div class="nc-time">${formatTime(n.createdAt)}</div><div class="nc-txt">${n.content}</div><span class="nc-tag">${n.tag}</span></div><button class="nc-del" data-note-id="${n.id}">✕</button></div>`; });
+            db.notes.forEach(n => { 
+                const imagesHtml = n.images && n.images.length > 0 ? `<div class="nc-images">${n.images.map((img, idx) => `<img src="${img}" class="nc-img" data-idx="${idx}" onclick="showNoteImage(this)">`).join('')}</div>` : '';
+                html += `<div class="nc"><div class="nc-b" style="background:${n.color}"></div><div class="nc-i"><div class="nc-time">${formatTime(n.createdAt)}</div>${imagesHtml}<div class="nc-txt">${n.content}</div><span class="nc-tag">${n.tag}</span></div><button class="nc-del" data-note-id="${n.id}">✕</button></div>`; 
+            });
             html += '<div class="nc nc-new" style="border:0.5px dashed var(--border2)" onclick="openModal(\'note\')"><div style="font-size:20px;margin-bottom:4px">+</div>新建笔记</div></div>';
             container.innerHTML = html;
+        }
+
+        window.showNoteImage = function(imgEl) {
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1000;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
+            overlay.onclick = () => overlay.remove();
+            
+            const img = document.createElement('img');
+            img.src = imgEl.src;
+            img.style.maxWidth = '90%';
+            img.style.maxHeight = '90%';
+            img.style.borderRadius = '12px';
+            img.onclick = e => e.stopPropagation();
+            
+            overlay.appendChild(img);
+            document.body.appendChild(overlay);
         }
 
         function renderOverdue() {
@@ -1962,12 +2079,49 @@
             list.innerHTML = html;
         }
 
+        // 计算连续打卡天数
+        function calculateStreak() {
+            const doneTasks = db.tasks.filter(t => t.done && t.completedAt);
+            if (doneTasks.length === 0) return 0;
+            
+            // 收集所有完成日期
+            const completedDates = new Set();
+            doneTasks.forEach(t => {
+                const dt = new Date(t.completedAt);
+                const key = `${dt.getFullYear()}-${dt.getMonth()}-${dt.getDate()}`;
+                completedDates.add(key);
+            });
+            
+            db.completedOverdueTasks.forEach(t => {
+                const dt = new Date(t.solvedAt);
+                const key = `${dt.getFullYear()}-${dt.getMonth()}-${dt.getDate()}`;
+                completedDates.add(key);
+            });
+            
+            // 从今天向前计算连续天数
+            let streak = 0;
+            let checkDate = new Date(today);
+            
+            for (let i = 0; i < 365; i++) {
+                const key = `${checkDate.getFullYear()}-${checkDate.getMonth()}-${checkDate.getDate()}`;
+                if (completedDates.has(key)) {
+                    streak++;
+                    checkDate.setDate(checkDate.getDate() - 1);
+                } else {
+                    break;
+                }
+            }
+            
+            return streak;
+        }
+        
         function renderAchievements() {
             const doneTasks = db.tasks.filter(t => t.done);
             const allDone = doneTasks.concat(db.completedOverdueTasks.map(t => ({ name: t.name, urgency: t.urgency, projectId: t.projectId, done: true, overdue: true, createdAt: t.solvedAt, completedAt: t.solvedAt, projectName: t.projectName })));
             const completedCount = allDone.length, highDone = allDone.filter(t => t.urgency === 'high').length;
             const projCompleted = db.projects.filter(p => { const pt = db.tasks.filter(t => t.projectId === p.id); return pt.length > 0 && pt.every(t => t.done); }).length;
-            document.getElementById('ach-completed').textContent = completedCount; document.getElementById('ach-high-done').textContent = highDone; document.getElementById('ach-proj-done').textContent = projCompleted; document.getElementById('ach-streak').textContent = '42';
+            const streak = calculateStreak();
+            document.getElementById('ach-completed').textContent = completedCount; document.getElementById('ach-high-done').textContent = highDone; document.getElementById('ach-proj-done').textContent = projCompleted; document.getElementById('ach-streak').textContent = streak;
             const allAchievements = [...db.achievements, ...db.customAchievements];
             allAchievements.forEach(a => { if (a.condition === 'finish1') a.unlocked = completedCount >= 1; if (a.condition === 'finish10') a.unlocked = completedCount >= 10; if (a.condition === 'finish50') a.unlocked = completedCount >= 50; if (a.condition === 'high5') a.unlocked = highDone >= 5; if (a.condition === 'read3') a.unlocked = allDone.filter(t => getProjectName(t.projectId) === '阅读计划').length >= 3; if (a.condition === 'projDone') a.unlocked = projCompleted >= 1; if (a.condition === 'rustHalf') a.unlocked = allDone.filter(t => getProjectName(t.projectId) === '学习 Rust').length >= 3; if (a.condition === 'fit3') a.unlocked = allDone.filter(t => getProjectName(t.projectId) === '健身记录').length >= 3; if (a.condition === 'overdueFix') a.unlocked = db.completedOverdueTasks.length >= 3; });
             const unlockedCount = allAchievements.filter(a => a.unlocked).length, totalAch = allAchievements.length, pct = totalAch > 0 ? Math.round((unlockedCount / totalAch) * 100) : 0;
@@ -1990,7 +2144,35 @@
             document.getElementById('data-recent').innerHTML = '<div style="margin-bottom:8px;font-weight:500;">最近完成</div>' + (recent.length ? recent.map(t => `<div style="margin-bottom:4px;">✅ ${t.name} <span style="color:var(--text3);font-size:10px;">${formatTime(t.completedAt)}</span></div>`).join('') : '<div style="color:var(--text3);">暂无最近完成记录</div>');
         }
 
-        function renderSidebar() { document.getElementById('sidebar-projects').innerHTML = db.projects.map(p => `<div class="si" data-proj-id="${p.id}"><span class="sbar" style="background:${p.color}"></span>${p.name}</div>`).join(''); }
+        function renderSidebar() { 
+            const sidebarProjects = document.getElementById('sidebar-projects');
+            sidebarProjects.innerHTML = db.projects.map(p => `<div class="si" data-proj-id="${p.id}"><span class="sbar" style="background:${p.color}"></span>${p.name}</div>`).join('');
+            
+            // 添加项目和标签筛选点击事件
+            const sidebarItems = document.querySelectorAll('.sidebar .si');
+            sidebarItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const projId = item.dataset.projId;
+                    const filter = item.dataset.filter;
+                    if (projId) {
+                        activeFilter = projId;
+                        // 切换到总览视图
+                        document.querySelectorAll('.tbtn').forEach(b => b.classList.remove('active'));
+                        document.querySelector('.tbtn[data-view="overview"]').classList.add('active');
+                        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                        document.getElementById('view-overview').classList.add('active');
+                        renderOverview();
+                    } else if (filter) {
+                        activeFilter = filter;
+                        document.querySelectorAll('.tbtn').forEach(b => b.classList.remove('active'));
+                        document.querySelector('.tbtn[data-view="overview"]').classList.add('active');
+                        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                        document.getElementById('view-overview').classList.add('active');
+                        renderOverview();
+                    }
+                });
+            });
+        }
 
         function renderCal() {
             document.getElementById('cal-m').textContent = cY + '年 ' + MONTHS[cM];
@@ -2005,11 +2187,35 @@
             const rem = (7 - (first + days) % 7) % 7; for (let n = 1; n <= rem; n++) g.appendChild(mkDay(n, nm, ny, true));
         }
 
-        function refreshAll() { renderToday(); renderOverview(); renderNotes(); renderOverdue(); renderAchievements(); renderDataView(); renderSidebar(); renderCal(); }
+        function updateCalView(key) {
+            const dayEl = document.querySelector(`.cday[data-cal-key="${key}"]`);
+            if (dayEl) {
+                const tasks = db.calTasks[key] || [];
+                const cdotContainer = dayEl.querySelector('.cdots');
+                if (cdotContainer) {
+                    cdotContainer.innerHTML = '';
+                    const urgColorMap = { 'high': 'var(--red)', 'mid': 'var(--amber)', 'low': 'var(--green)' };
+                    tasks.slice(0, 4).forEach(t => {
+                        const dot = document.createElement('div');
+                        dot.className = 'cdot';
+                        dot.style.background = urgColorMap[t.urgency] || 'var(--gray)';
+                        cdotContainer.appendChild(dot);
+                    });
+                    dayEl.classList.toggle('has-tasks', tasks.length > 0);
+                    dayEl.classList.toggle('selected', selectedCalKey === key);
+                }
+            }
+            if (selectedCalKey === key) {
+                const [yr, mo, dt] = key.split('-');
+                const el = document.querySelector(`.cday[data-cal-key="${key}"]`);
+                if (el) selDay(el, parseInt(dt), parseInt(mo) - 1, parseInt(yr), key);
+            }
+        }
+        function refreshAll() { syncAllCalTasks(); renderToday(); renderOverview(); renderNotes(); renderOverdue(); renderAchievements(); renderDataView(); renderSidebar(); renderCal(); }
 
-        function toggleTask(taskId) { const t = db.tasks.find(x => x.id === taskId); if (!t) return; t.done = !t.done; t.completedAt = t.done ? new Date().toISOString() : null; if (t.deadline) { const key = ck(new Date(t.deadline + 'T00:00:00').getFullYear(), new Date(t.deadline + 'T00:00:00').getMonth(), new Date(t.deadline + 'T00:00:00').getDate()); const ce = db.calTasks[key] ? db.calTasks[key].find(ct => ct.taskId === t.id) : null; if (ce) ce.done = t.done; } toast(t.done ? '任务已完成' : '任务已取消完成'); checkAchievements(); saveDB(); refreshAll(); }
+        function toggleTask(taskId) { const t = db.tasks.find(x => x.id === taskId); if (!t) return; t.done = !t.done; t.completedAt = t.done ? new Date().toISOString() : null; if (t.deadline) { const key = ck(new Date(t.deadline + 'T00:00:00').getFullYear(), new Date(t.deadline + 'T00:00:00').getMonth(), new Date(t.deadline + 'T00:00:00').getDate()); const ce = db.calTasks[key] ? db.calTasks[key].find(ct => ct.taskId === t.id) : null; if (ce) ce.done = t.done; updateCalView(key); } toast(t.done ? '任务已完成' : '任务已取消完成'); checkAchievements(); saveDB(); refreshAll(); }
 
-        function deleteTask(taskId) { if (!confirm('确定删除该任务吗？')) return; const t = db.tasks.find(x => x.id === taskId); if (t && t.deadline) { const key = ck(new Date(t.deadline + 'T00:00:00').getFullYear(), new Date(t.deadline + 'T00:00:00').getMonth(), new Date(t.deadline + 'T00:00:00').getDate()); if (db.calTasks[key]) { db.calTasks[key] = db.calTasks[key].filter(ct => ct.taskId !== taskId); if (!db.calTasks[key].length) delete db.calTasks[key]; } } db.tasks = db.tasks.filter(x => x.id !== taskId); saveDB(); refreshAll(); toast('任务已删除'); }
+        function deleteTask(taskId) { if (!confirm('确定删除该任务吗？')) return; const t = db.tasks.find(x => x.id === taskId); if (t && t.deadline) { const key = ck(new Date(t.deadline + 'T00:00:00').getFullYear(), new Date(t.deadline + 'T00:00:00').getMonth(), new Date(t.deadline + 'T00:00:00').getDate()); if (db.calTasks[key]) { db.calTasks[key] = db.calTasks[key].filter(ct => ct.taskId !== taskId); if (!db.calTasks[key].length) delete db.calTasks[key]; } updateCalView(key); } db.tasks = db.tasks.filter(x => x.id !== taskId); saveDB(); refreshAll(); toast('任务已删除'); }
 
         function editTask(taskId) { openModal('edit-task', taskId); }
 
@@ -2019,7 +2225,7 @@
 
         function checkAchievements() { const doneTasks = db.tasks.filter(t => t.done); [...db.achievements, ...db.customAchievements].forEach(a => { if (a.unlocked) return; let unlock = false; if (a.condition === 'finish1' && doneTasks.length >= 1) unlock = true; if (a.condition === 'finish10' && doneTasks.length >= 10) unlock = true; if (a.condition === 'finish50' && doneTasks.length >= 50) unlock = true; if (a.condition === 'high5' && doneTasks.filter(t => t.urgency === 'high').length >= 5) unlock = true; if (a.condition === 'read3' && doneTasks.filter(t => getProjectName(t.projectId) === '阅读计划').length >= 3) unlock = true; if (a.condition === 'projDone' && db.projects.filter(p => { const pt = db.tasks.filter(t => t.projectId === p.id); return pt.length > 0 && pt.every(t => t.done); }).length >= 1) unlock = true; if (a.condition === 'rustHalf' && doneTasks.filter(t => getProjectName(t.projectId) === '学习 Rust').length >= 3) unlock = true; if (a.condition === 'fit3' && doneTasks.filter(t => getProjectName(t.projectId) === '健身记录').length >= 3) unlock = true; if (a.condition === 'overdueFix' && db.completedOverdueTasks.length >= 3) unlock = true; if (unlock) { a.unlocked = true; showAchievement(a); } }); saveDB(); }
 
-        function handleOverdueTask(taskId) { const t = db.tasks.find(x => x.id === taskId); if (!t) return; t.done = true; t.completedAt = new Date().toISOString(); db.completedOverdueTasks.push({ name: t.name, urgency: t.urgency, projectId: t.projectId, projectName: getProjectName(t.projectId), solvedAt: new Date().toISOString() }); if (t.deadline) { const key = ck(new Date(t.deadline + 'T00:00:00').getFullYear(), new Date(t.deadline + 'T00:00:00').getMonth(), new Date(t.deadline + 'T00:00:00').getDate()); const ce = db.calTasks[key] ? db.calTasks[key].find(ct => ct.taskId === t.id) : null; if (ce) ce.done = true; } toast('逾期任务已处理'); checkAchievements(); saveDB(); refreshAll(); }
+        function handleOverdueTask(taskId) { const t = db.tasks.find(x => x.id === taskId); if (!t) return; t.done = true; t.completedAt = new Date().toISOString(); db.completedOverdueTasks.push({ name: t.name, urgency: t.urgency, projectId: t.projectId, projectName: getProjectName(t.projectId), solvedAt: new Date().toISOString() }); if (t.deadline) { const key = ck(new Date(t.deadline + 'T00:00:00').getFullYear(), new Date(t.deadline + 'T00:00:00').getMonth(), new Date(t.deadline + 'T00:00:00').getDate()); const ce = db.calTasks[key] ? db.calTasks[key].find(ct => ct.taskId === t.id) : null; if (ce) ce.done = true; updateCalView(key); } toast('逾期任务已处理'); checkAchievements(); saveDB(); refreshAll(); }
 
         function deleteNote(noteId) { if (!confirm('确定删除这条笔记吗？')) return; db.notes = db.notes.filter(n => n.id !== noteId); saveDB(); refreshAll(); }
 
@@ -2034,8 +2240,11 @@
 
         document.addEventListener('click', function(e) {
             const target = e.target;
-            const editBtn = target.closest('.task-edit-btn'); if (editBtn) { e.stopPropagation(); editTask(editBtn.dataset.editTaskId); return; }
-            const delBtn = target.closest('.task-del-btn'); if (delBtn) { e.stopPropagation(); const tid = delBtn.dataset.deleteTaskId; if (tid) deleteTask(tid); return; }
+            if (target.closest('.data-export-btn') || target.closest('.data-import-btn')) {
+                return;
+            }
+            const editBtn = target.closest('.task-edit-btn'); if (editBtn && editBtn.dataset.editTaskId) { e.stopPropagation(); editTask(editBtn.dataset.editTaskId); return; }
+            const delBtn = target.closest('.task-del-btn'); if (delBtn && delBtn.dataset.deleteTaskId) { e.stopPropagation(); deleteTask(delBtn.dataset.deleteTaskId); return; }
             const projEditBtn = target.closest('.proj-edit-btn'); if (projEditBtn) { e.stopPropagation(); editProject(projEditBtn.dataset.editProjId); return; }
             const projDelBtn = target.closest('.proj-del-btn'); if (projDelBtn) { e.stopPropagation(); deleteProject(projDelBtn.dataset.deleteProjId); return; }
             const taskRow = target.closest('[data-task-id]'); if (taskRow && !target.closest('.phdr') && !target.closest('.spill')) { e.stopPropagation(); toggleTask(taskRow.dataset.taskId); return; }
@@ -2058,10 +2267,12 @@
         document.addEventListener('click', function(e) { if (fabOpen && !e.target.closest('#fw')) { fabOpen = false; document.getElementById('fm').classList.remove('open'); document.getElementById('fab').classList.remove('open'); } });
 
         window.calNav = function(dir) { cM += dir; if (cM > 11) { cM = 0; cY++; } else if (cM < 0) { cM = 11; cY--; } renderCal(); document.getElementById('cal-det').style.display = 'none'; selectedCalKey = null; };
+        window.deleteCalTask = deleteCalTask;
+        window.editCalTask = editCalTask;
 
         const modalTemplates = {
-            task: '<div class="mf"><label>任务名称</label><input type="text" id="mf-task-name" placeholder="输入任务名称..."></div><div class="mf"><label>紧急程度</label><div class="urg-sel"><button class="uo" onclick="selectUrgency(this,\'high\')">🔴 紧急</button><button class="uo sm" onclick="selectUrgency(this,\'mid\')">🟡 中</button><button class="uo" onclick="selectUrgency(this,\'low\')">🟢 低</button></div></div><div class="mf"><label>所属项目</label><select id="mf-task-proj"><option value="">（无项目）</option>' + db.projects.map(p => '<option value="' + p.id + '">' + p.name + '</option>').join('') + '</select></div><div class="mf"><label>每日任务</label><select id="mf-task-daily"><option value="0">否</option><option value="1">是</option></select></div><div class="mf"><label>截止日期</label><input type="date" id="mf-task-date"></div>',
-            note: '<div class="mf"><label>内容</label><textarea id="mf-note-content" placeholder="记录你的思路..."></textarea></div><div class="mf"><label>关联项目</label><select id="mf-note-proj"><option value="">（无）</option>' + db.projects.map(p => '<option value="' + p.id + '">' + p.name + '</option>').join('') + '</select></div>',
+            task: '<div class="mf"><label>任务名称</label><input type="text" id="mf-task-name" placeholder="输入任务名称..."></div><div class="mf"><label>紧急程度</label><div class="urg-sel"><button class="uo" onclick="selectUrgency(this,\'high\')">🔴 紧急</button><button class="uo sm" onclick="selectUrgency(this,\'mid\')">🟡 中</button><button class="uo" onclick="selectUrgency(this,\'low\')">🟢 低</button></div></div><div class="mf"><label>所属项目</label><div id="mf-task-proj-trigger" class="mf-trigger"><span id="mf-task-proj-label">（无项目）</span></div></div><div class="mf"><label>每日任务</label><div id="mf-task-daily-trigger" class="mf-trigger"><span id="mf-task-daily-label">否</span></div></div><div class="mf"><label>截止日期</label><div id="mf-task-date-trigger" class="mf-trigger"><span id="mf-task-date-label"></span></div></div>',
+            note: '<div class="mf"><label>内容</label><textarea id="mf-note-content" placeholder="记录你的思路..."></textarea></div><div class="mf"><label>关联项目</label><select id="mf-note-proj"><option value="">（无）</option>' + db.projects.map(p => '<option value="' + p.id + '">' + p.name + '</option>').join('') + '</select></div><div class="mf"><label>添加图片</label><div id="mf-note-images"></div><button id="mf-note-add-image" class="mbtn" style="width:100%;background:var(--bg2);color:var(--text2);margin-top:8px;">📷 添加图片</button></div>',
             project: '<div class="mf"><label>项目名称</label><input type="text" id="mf-proj-name" placeholder="输入项目名称..."></div><div class="mf"><label>状态</label><select id="mf-proj-status"><option>未开始</option><option>进行中</option><option>暂存</option><option>已完成</option><option>已归档</option></select></div><div class="mf"><label>备注</label><textarea id="mf-proj-desc" placeholder="项目说明..."></textarea></div>',
             badge: '<div class="mf"><label>勋章图标 (emoji)</label><input type="text" id="mf-badge-icon" placeholder="例如 🏆" maxlength="4"></div><div class="mf"><label>勋章名称</label><input type="text" id="mf-badge-name" placeholder="输入勋章名称..."></div><div class="mf"><label>描述</label><input type="text" id="mf-badge-desc" placeholder="解锁条件或描述..."></div>'
         };
@@ -2080,15 +2291,18 @@
                 const dateTrigger = document.getElementById('mf-task-date-trigger');
                 const dateLabel = document.getElementById('mf-task-date-label');
                 let selectedDate = '';
-                if (dateTrigger && !id) {
-                    if (pendingCalKey) {
+                if (dateTrigger) {
+                    if (type === 'edit-task' && id) {
+                        const task = db.tasks.find(t => t.id === id);
+                        selectedDate = task?.deadline || '';
+                    } else if (pendingCalKey) {
                         selectedDate = pendingCalKey;
                     } else if (selectedCalKey) {
                         selectedDate = selectedCalKey;
                     } else {
                         selectedDate = today.toISOString().split('T')[0];
                     }
-                    dateLabel.textContent = selectedDate;
+                    dateLabel.textContent = selectedDate || '选择日期';
                 }
                 dateTrigger.addEventListener('click', () => {
                     openDatePicker(selectedDate, (val) => {
@@ -2108,7 +2322,19 @@
                         });
                     });
                 }
-                if (type === 'edit-task' && id) { const task = db.tasks.find(t => t.id === id); if (task) { document.getElementById('mf-task-name').value = task.name; if (task.projectId) { selectedProjId = task.projectId; projLabel.textContent = getProjectName(task.projectId); } if (task.deadline) { selectedDate = task.deadline; dateLabel.textContent = task.deadline; } document.getElementById('mf-task-daily').value = task.daily ? '1' : '0'; const urgBtns = document.querySelectorAll('#mb .uo'); urgBtns.forEach(b => { if (b.dataset.urg === task.urgency) { const colors = { 'high': { bg: 'var(--red-bg)', border: 'var(--red)', text: 'var(--red-t)' }, 'mid': { bg: 'var(--amber-bg)', border: 'var(--amber)', text: 'var(--amber-t)' }, 'low': { bg: 'var(--green-bg)', border: 'var(--green)', text: 'var(--green-t)' } }; const c = colors[task.urgency]; b.style.background = c.bg; b.style.borderColor = c.border; b.style.color = c.text; } }); } }
+                const dailyTrigger = document.getElementById('mf-task-daily-trigger');
+                const dailyLabel = document.getElementById('mf-task-daily-label');
+                let selectedDaily = '0';
+                if (dailyTrigger) {
+                    const dailyItems = [{ value: '0', label: '否' }, { value: '1', label: '是' }];
+                    dailyTrigger.addEventListener('click', () => {
+                        openListPicker(dailyItems, '每日任务', selectedDaily, (val) => {
+                            selectedDaily = val;
+                            dailyLabel.textContent = dailyItems.find(i => i.value === val)?.label || '否';
+                        });
+                    });
+                }
+                if (type === 'edit-task' && id) { const task = db.tasks.find(t => t.id === id); if (task) { document.getElementById('mf-task-name').value = task.name; if (task.projectId) { selectedProjId = task.projectId; projLabel.textContent = getProjectName(task.projectId); } if (task.deadline) { selectedDate = task.deadline; dateLabel.textContent = task.deadline; } selectedDaily = task.daily ? '1' : '0'; dailyLabel.textContent = task.daily ? '是' : '否'; const urgBtns = document.querySelectorAll('#mb .uo'); urgBtns.forEach(b => { if (b.dataset.urg === task.urgency) { const colors = { 'high': { bg: 'var(--red-bg)', border: 'var(--red)', text: 'var(--red-t)' }, 'mid': { bg: 'var(--amber-bg)', border: 'var(--amber)', text: 'var(--amber-t)' }, 'low': { bg: 'var(--green-bg)', border: 'var(--green)', text: 'var(--green-t)' } }; const c = colors[task.urgency]; b.style.background = c.bg; b.style.borderColor = c.border; b.style.color = c.text; } }); } }
                 const nameInput = document.getElementById('mf-task-name'); if (nameInput) { nameInput.focus(); nameInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); saveModal(); } }); }
             }
             if (type === 'edit-project' && template && id) { const proj = getProject(id); if (proj) { document.getElementById('mf-proj-name').value = proj.name; document.getElementById('mf-proj-status').value = proj.status; } }
@@ -2129,13 +2355,14 @@
                 const projLabel = document.getElementById('mf-task-proj-label');
                 const projItems = [{ value: '', label: '（无项目）' }, ...db.projects.map(p => ({ value: p.id, label: p.name }))];
                 const projectId = projItems.find(i => i.label === projLabel?.textContent)?.value || null;
-                const daily = document.getElementById('mf-task-daily')?.value === '1';
+                const dailyLabel = document.getElementById('mf-task-daily-label');
+                const daily = dailyLabel?.textContent === '是';
                 if (editingTaskId) { const t = db.tasks.find(x => x.id === editingTaskId); if (t) { const oldDeadline = t.deadline; t.name = name; t.urgency = urgency; t.projectId = projectId; t.deadline = deadline; t.daily = daily; syncTaskCal(t, oldDeadline); toast('任务已更新'); } }
                 else { const newTask = { id: genId(), name, urgency, projectId, done: false, daily, streak: '', createdAt: new Date().toISOString(), completedAt: null, deadline }; db.tasks.push(newTask); syncTaskCal(newTask, null); toast('任务已添加'); }
                 editingTaskId = null; pendingCalKey = null; saveDB(); refreshAll(); if (selectedCalKey) { const [yr, mo, dt] = selectedCalKey.split('-'); const el = document.querySelector(`.cday[data-cal-key="${selectedCalKey}"]`); if (el) selDay(el, parseInt(dt), parseInt(mo) - 1, parseInt(yr), selectedCalKey); } closeModal();
             } else if (currentModalType === 'edit-project' && editingProjectId) { const name = document.getElementById('mf-proj-name')?.value.trim(); if (!name) { toast('请输入项目名称'); return; } const proj = getProject(editingProjectId); if (proj) { proj.name = name; proj.status = document.getElementById('mf-proj-status')?.value || proj.status; toast('项目已更新'); saveDB(); refreshAll(); } editingProjectId = null; closeModal();
             } else if (currentModalType === 'project') { const name = document.getElementById('mf-proj-name')?.value.trim(); if (!name) { toast('请输入项目名称'); return; } db.projects.push({ id: genId(), name, color: ['var(--green)', 'var(--amber)', 'var(--blue)', 'var(--purple)', 'var(--pink)', 'var(--red)'][Math.floor(Math.random() * 6)], status: document.getElementById('mf-proj-status')?.value || '未开始' }); saveDB(); refreshAll(); toast('项目已创建'); closeModal();
-            } else if (currentModalType === 'note') { const content = document.getElementById('mf-note-content')?.value.trim(); if (!content) { toast('请输入笔记内容'); return; } const projectId = document.getElementById('mf-note-proj')?.value || null; const proj = projectId ? getProject(projectId) : null; db.notes.unshift({ id: genId(), content, tag: proj ? '# ' + proj.name : '# 笔记', color: proj ? proj.color : 'var(--blue)', createdAt: new Date().toISOString(), projectId }); saveDB(); refreshAll(); toast('笔记已保存'); closeModal();
+            } else if (currentModalType === 'note') { const content = document.getElementById('mf-note-content')?.value.trim(); if (!content && noteImages.length === 0) { toast('请输入笔记内容或添加图片'); return; } const projectId = document.getElementById('mf-note-proj')?.value || null; const proj = projectId ? getProject(projectId) : null; db.notes.unshift({ id: genId(), content: content || '', tag: proj ? '# ' + proj.name : '# 笔记', color: proj ? proj.color : 'var(--blue)', createdAt: new Date().toISOString(), projectId, images: [...noteImages] }); noteImages = []; saveDB(); refreshAll(); toast('笔记已保存'); closeModal();
             } else if (currentModalType === 'badge') { const name = document.getElementById('mf-badge-name')?.value.trim(); if (!name) { toast('请输入勋章名称'); return; } db.customAchievements.push({ id: 'custom_' + genId(), icon: document.getElementById('mf-badge-icon')?.value.trim() || '🏅', name, desc: document.getElementById('mf-badge-desc')?.value.trim() || '', condition: 'custom', unlocked: true }); saveDB(); refreshAll(); toast('勋章已添加'); closeModal(); }
         };
 
@@ -2304,6 +2531,191 @@
             btn.style.color = c.text;
         };
 
+        let noteImages = [];
+
+        window.exportData = function() {
+            const exportData = {
+                version: '1.0',
+                exportTime: new Date().toISOString(),
+                projects: db.projects,
+                tasks: db.tasks,
+                notes: db.notes,
+                achievements: db.achievements,
+                customAchievements: db.customAchievements,
+                completedOverdueTasks: db.completedOverdueTasks,
+                calTasks: db.calTasks
+            };
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'journey-data-' + new Date().toISOString().split('T')[0] + '.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            toast('数据已导出');
+        };
+
+        window.importData = function() {
+            document.getElementById('import-file').click();
+        };
+
+        let pendingImportData = null;
+        let importFileInput = null;
+        
+        window.showConfirmDialog = function(title, message, callback) {
+            const listpickOv = document.getElementById('listpick-ov');
+            const listpickTitle = document.getElementById('listpick-title');
+            const listpickList = document.getElementById('listpick-list');
+            
+            listpickTitle.textContent = title;
+            listpickList.innerHTML = `
+                <div class="listpick-msg" style="padding:16px;text-align:center;color:var(--text2);font-size:14px;">${message}</div>
+                <div class="spop-it" style="text-align:center;color:var(--red);padding:16px;border-top:1px solid var(--border);" data-action="cancel">取消</div>
+                <div class="spop-it" style="text-align:center;color:var(--blue);padding:16px;border-top:1px solid var(--border);" data-action="confirm">确定导入</div>
+            `;
+            
+            listpickOv.classList.add('show');
+            
+            const handleClick = function(e) {
+                const actionItem = e.target.closest('[data-action]');
+                if (actionItem) {
+                    listpickOv.classList.remove('show');
+                    listpickList.removeEventListener('click', handleClick);
+                    if (actionItem.dataset.action === 'confirm') {
+                        callback(true);
+                    } else {
+                        callback(false);
+                    }
+                }
+            };
+            listpickList.addEventListener('click', handleClick);
+        };
+        
+        window.handleFileImport = function(event) {
+            importFileInput = event.target;
+            const file = importFileInput.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    pendingImportData = JSON.parse(e.target.result);
+                    
+                    showConfirmDialog('确认导入', '导入数据会覆盖当前所有数据，确定继续吗？', function(confirmed) {
+                        if (confirmed) {
+                            if (pendingImportData.projects) db.projects = pendingImportData.projects;
+                            if (pendingImportData.tasks) db.tasks = pendingImportData.tasks;
+                            if (pendingImportData.notes) db.notes = pendingImportData.notes;
+                            if (pendingImportData.achievements) db.achievements = pendingImportData.achievements;
+                            if (pendingImportData.customAchievements) db.customAchievements = pendingImportData.customAchievements;
+                            if (pendingImportData.completedOverdueTasks) db.completedOverdueTasks = pendingImportData.completedOverdueTasks;
+                            if (pendingImportData.calTasks) db.calTasks = pendingImportData.calTasks;
+                            
+                            saveDB();
+                            refreshAll();
+                            toast('数据导入成功');
+                        }
+                        pendingImportData = null;
+                        importFileInput.value = '';
+                        importFileInput = null;
+                    });
+                } catch (error) {
+                    toast('导入失败：文件格式错误');
+                    importFileInput.value = '';
+                    importFileInput = null;
+                }
+            };
+            reader.readAsText(file);
+        };
+
+        window.addNoteImage = function() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const base64 = event.target.result;
+                    noteImages.push(base64);
+                    renderNoteImages();
+                };
+                reader.readAsDataURL(file);
+            };
+            input.click();
+        };
+
+        function renderNoteImages() {
+            const container = document.getElementById('mf-note-images');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            noteImages.forEach((img, idx) => {
+                const div = document.createElement('div');
+                div.style.position = 'relative';
+                div.style.display = 'inline-block';
+                div.style.margin = '4px';
+                div.style.width = '80px';
+                div.style.height = '80px';
+                div.style.borderRadius = '8px';
+                div.style.overflow = 'hidden';
+                div.style.border = '1px solid var(--border)';
+                
+                const imgEl = document.createElement('img');
+                imgEl.src = img;
+                imgEl.style.width = '100%';
+                imgEl.style.height = '100%';
+                imgEl.style.objectFit = 'cover';
+                
+                const delBtn = document.createElement('button');
+                delBtn.textContent = '✕';
+                delBtn.style.position = 'absolute';
+                delBtn.style.top = '2px';
+                delBtn.style.right = '2px';
+                delBtn.style.width = '20px';
+                delBtn.style.height = '20px';
+                delBtn.style.border = 'none';
+                delBtn.style.borderRadius = '50%';
+                delBtn.style.background = 'rgba(0,0,0,0.6)';
+                delBtn.style.color = '#fff';
+                delBtn.style.fontSize = '12px';
+                delBtn.style.cursor = 'pointer';
+                delBtn.onclick = () => {
+                    noteImages.splice(idx, 1);
+                    renderNoteImages();
+                };
+                
+                div.appendChild(imgEl);
+                div.appendChild(delBtn);
+                container.appendChild(div);
+            });
+        }
+
+        document.addEventListener('click', function(e) {
+            if (e.target.id === 'mf-note-add-image') {
+                e.preventDefault();
+                addNoteImage();
+            }
+        });
+
+        // 为picker和listpick添加背景点击关闭
+        document.getElementById('picker-ov').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('show');
+            }
+        });
+        
+        document.getElementById('listpick-ov').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('show');
+            }
+        });
+        
         function init() { syncAllCalTasks(); checkAchievements(); refreshAll(); renderCal(); document.getElementById('cal-det').style.display = 'none'; }
         init();
     })();
