@@ -374,7 +374,9 @@
             min-width: 0;
             overflow: hidden;
             text-overflow: ellipsis;
-            white-space: nowrap;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
             pointer-events: none;
             line-height: 1.4;
             max-width: calc(100% - 180px);
@@ -1742,6 +1744,11 @@
             .tname {
                 max-width: calc(100% - 260px);
                 flex-shrink: 1;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                display: -webkit-box;
+                -webkit-line-clamp: 2;
+                -webkit-box-orient: vertical;
             }
             .task-actions {
                 min-width: 76px;
