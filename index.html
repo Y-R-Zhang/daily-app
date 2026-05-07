@@ -1855,7 +1855,7 @@
     <script>
     (function() {
         const DB_KEY = 'task_app_final_v2';
-        const today = new Date();
+        const today = new Date(); today.setHours(0, 0, 0, 0);
         let cY = today.getFullYear(), cM = today.getMonth();
         const DOW = ['日', '一', '二', '三', '四', '五', '六'];
         const MONTHS = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'];
@@ -1925,7 +1925,7 @@
         function urgClass(u) { return u === 'high' ? 'high' : u === 'mid' ? 'mid' : 'low'; }
         function urgLabel(u) { return u === 'high' ? '紧急' : u === 'mid' ? '中' : '低'; }
         function ck(y, m, d) { return y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0'); }
-        function isOverdue(task) { if (!task.deadline) return false; return new Date(task.deadline + 'T00:00:00') < today; }
+        function isOverdue(task) { if (!task.deadline) return false; return new Date(task.deadline + 'T00:00:00') < today && getOverdueDays(task) > 0; }
         function getOverdueDays(task) { if (!task.deadline) return 0; const dl = new Date(task.deadline + 'T00:00:00'); return Math.floor((today - dl) / (1000 * 60 * 60 * 24)); }
         function getDaysUntil(deadline) { if (!deadline) return Infinity; const dl = new Date(deadline + 'T00:00:00'); return Math.floor((dl - today) / (1000 * 60 * 60 * 24)); }
         function toast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.innerText = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2000); }
@@ -2416,7 +2416,7 @@
         window.editCalTask = editCalTask;
 
         const modalTemplates = {
-            task: '<div class="mf"><label>任务名称</label><input type="text" id="mf-task-name" placeholder="输入任务名称..."></div><div class="mf"><label>紧急程度</label><div class="urg-sel"><button class="uo" onclick="selectUrgency(this,\'high\')">🔴 紧急</button><button class="uo sm" onclick="selectUrgency(this,\'mid\')">🟡 中</button><button class="uo" onclick="selectUrgency(this,\'low\')">🟢 低</button></div></div><div class="mf"><label>所属项目</label><div id="mf-task-proj-trigger" class="mf-trigger"><span id="mf-task-proj-label">（无项目）</span></div></div><div class="mf"><label>每日任务</label><div id="mf-task-daily-trigger" class="mf-trigger"><span id="mf-task-daily-label">否</span></div></div><div class="mf"><label>截止日期</label><div id="mf-task-date-trigger" class="mf-trigger"><span id="mf-task-date-label"></span></div></div>',
+            task: '<div class="mf"><label>任务名称</label><input type="text" id="mf-task-name" placeholder="输入任务名称..."></div><div class="mf"><label>紧急程度</label><div class="urg-sel"><button class="uo" onclick="selectUrgency(this,\'high\')">🔴 紧急</button><button class="uo sm" onclick="selectUrgency(this,\'mid\')">🟡 中</button><button class="uo" onclick="selectUrgency(this,\'low\')">🟢 低</button></div></div><div class="mf"><label>所属项目</label><div id="mf-task-proj-trigger" class="mf-trigger"><span id="mf-task-proj-label">（无项目）</span></div></div><div class="mf"><label>每日任务</label><div id="mf-task-daily-trigger" class="mf-trigger"><span id="mf-task-daily-label">否</span></div></div><div class="mf"><label>截止日期</label><div style="display:flex;align-items:center;gap:8px;"><div id="mf-task-date-trigger" class="mf-trigger" style="flex:1;"><span id="mf-task-date-label"></span></div><button id="mf-task-date-clear" class="mbtn" style="padding:4px 8px;font-size:12px;">✕</button></div></div>',
             note: '<div class="mf"><label>内容</label><textarea id="mf-note-content" placeholder="记录你的思路..."></textarea></div><div class="mf"><label>关联项目</label><select id="mf-note-proj"><option value="">（无）</option>' + db.projects.map(p => '<option value="' + p.id + '">' + p.name + '</option>').join('') + '</select></div><div class="mf"><label>添加图片</label><div id="mf-note-images"></div><button id="mf-note-add-image" class="mbtn" style="width:100%;background:var(--bg2);color:var(--text2);margin-top:8px;">📷 添加图片</button></div>',
             project: '<div class="mf"><label>项目名称</label><input type="text" id="mf-proj-name" placeholder="输入项目名称..."></div><div class="mf"><label>状态</label><select id="mf-proj-status"><option>未开始</option><option>进行中</option><option>暂存</option><option>已完成</option><option>已归档</option></select></div><div class="mf"><label>备注</label><textarea id="mf-proj-desc" placeholder="项目说明..."></textarea></div>',
             badge: '<div class="mf"><label>勋章图标 (emoji)</label><input type="text" id="mf-badge-icon" placeholder="例如 🏆" maxlength="4"></div><div class="mf"><label>勋章名称</label><input type="text" id="mf-badge-name" placeholder="输入勋章名称..."></div><div class="mf"><label>描述</label><input type="text" id="mf-badge-desc" placeholder="解锁条件或描述..."></div>'
@@ -2455,6 +2455,13 @@
                         dateLabel.textContent = val || '未排期';
                     });
                 });
+                const dateClearBtn = document.getElementById('mf-task-date-clear');
+                if (dateClearBtn) {
+                    dateClearBtn.addEventListener('click', () => {
+                        selectedDate = '';
+                        dateLabel.textContent = '未排期';
+                    });
+                }
                 const projTrigger = document.getElementById('mf-task-proj-trigger');
                 const projLabel = document.getElementById('mf-task-proj-label');
                 let selectedProjId = '';
@@ -2496,7 +2503,7 @@
                 const urgBtn = document.querySelector('#mb .uo.sh, #mb .uo.sm, #mb .uo.sl');
                 const urgency = urgBtn ? (urgBtn.classList.contains('sh') ? 'high' : urgBtn.classList.contains('sm') ? 'mid' : 'low') : 'mid';
                 const dateLabel = document.getElementById('mf-task-date-label');
-                const deadline = dateLabel?.textContent || null;
+                const deadline = dateLabel?.textContent && dateLabel.textContent !== '未排期' ? dateLabel.textContent : null;
                 const projLabel = document.getElementById('mf-task-proj-label');
                 const projItems = [{ value: '', label: '（无项目）' }, ...db.projects.map(p => ({ value: p.id, label: p.name }))];
                 const projectId = projItems.find(i => i.label === projLabel?.textContent)?.value || null;
