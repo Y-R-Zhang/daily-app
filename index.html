@@ -426,26 +426,31 @@
             background: var(--bg2);
         }
         .sl {
-            font-size: 10px;
+            font-size: 14px;
             font-weight: 600;
-            color: var(--text3);
-            text-transform: uppercase;
-            letter-spacing: .07em;
+            color: var(--text);
+            text-transform: none;
+            letter-spacing: normal;
             margin: 16px 0 8px;
         }
         .today-hdr {
             display: flex;
-            align-items: baseline;
-            gap: 8px;
-            margin-bottom: 14px;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+            padding: 12px;
+            background: var(--bg2);
+            border-radius: 12px;
         }
         .tday-d {
-            font-size: 22px;
-            font-weight: 600;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--blue);
         }
         .tday-s {
-            font-size: 12px;
-            color: var(--text3);
+            font-size: 15px;
+            color: var(--text2);
+            font-weight: 500;
         }
         .task-due {
             font-size: 10px;
@@ -461,10 +466,13 @@
         .section-header {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 10px;
             cursor: pointer;
             user-select: none;
-            padding: 4px 0;
+            padding: 10px 12px;
+            background: var(--bg2);
+            border-radius: 10px;
+            margin-bottom: 8px;
         }
         .section-header .chev {
             transition: transform .2s;
@@ -1742,7 +1750,7 @@
                 display: none;
             }
             .tname {
-                max-width: calc(100% - 260px);
+                max-width: calc(100% - 180px);
                 flex-shrink: 1;
                 overflow: hidden;
                 text-overflow: ellipsis;
@@ -1768,8 +1776,29 @@
                 background: none;
             }
             .tbtn {
-                padding: 4px 7px;
-                font-size: 11px;
+                padding: 6px 10px;
+                font-size: 15px;
+            }
+            .sl {
+                font-size: 16px !important;
+                font-weight: 600;
+            }
+            .today-hdr {
+                padding: 16px;
+                margin-bottom: 16px;
+            }
+            .tday-d {
+                font-size: 32px;
+            }
+            .tday-s {
+                font-size: 16px;
+            }
+            .section-header {
+                padding: 12px 16px;
+                margin-bottom: 10px;
+            }
+            .section-header .sl {
+                font-size: 16px !important;
             }
             .view {
                 padding: 12px 12px 100px;
@@ -1983,25 +2012,40 @@
             overdue.sort((a, b) => getOverdueDays(b) - getOverdueDays(a));
             upcomingAll.sort((a, b) => getDaysUntil(a.deadline) - getDaysUntil(b.deadline));
             let html = `<div class="today-hdr"><span class="tday-d">今天</span><span class="tday-s">${today.getMonth() + 1}月${today.getDate()}日 · 星期${DOW[today.getDay()]}</span></div>`;
+            html += `<div class="section-header" onclick="toggleSection(this)"><span class="chev ${todayCollapsed.overdue ? '' : 'open'}">▶</span><span class="sl" style="margin:0;color:var(--red-t)">⚠️ 逾期警报 (${overdue.length})</span></div><div class="section-body ${todayCollapsed.overdue ? 'collapsed' : ''}">`;
             if (overdue.length) {
-                html += `<div class="section-header" onclick="toggleSection(this)"><span class="chev ${todayCollapsed.overdue ? '' : 'open'}">▶</span><span class="sl" style="margin:0;color:var(--red-t)">⚠️ 逾期警报 (${overdue.length})</span></div><div class="section-body ${todayCollapsed.overdue ? 'collapsed' : ''}">`;
                 overdue.forEach(t => { const days = getOverdueDays(t); html += taskRowHTML(t, days === 1 ? '逾期 1 天' : `逾期 ${days} 天`, true); });
-                html += '</div>';
+            } else {
+                html += '<div style="color:var(--text3);font-size:13px;padding:12px;">暂无逾期任务</div>';
             }
+            html += '</div>';
             html += `<div class="section-header" onclick="toggleSection(this)"><span class="chev ${todayCollapsed.todayDue ? '' : 'open'}">▶</span><span class="sl" style="margin:0">📌 今日截止 (${todayDueDone}/${todayDueAll.length})</span></div><div class="section-body ${todayCollapsed.todayDue ? 'collapsed' : ''}">`;
-            todayDueAll.forEach(t => html += taskRowHTML(t, '今天截止', false));
+            if (todayDueAll.length) {
+                todayDueAll.forEach(t => html += taskRowHTML(t, '今天截止', false));
+            } else {
+                html += '<div style="color:var(--text3);font-size:13px;padding:12px;">今日暂无截止任务</div>';
+            }
             html += '</div>';
             html += `<div class="section-header" onclick="toggleSection(this)"><span class="chev ${todayCollapsed.habits ? '' : 'open'}">▶</span><span class="sl" style="margin:0">🔄 每日习惯 (${dailyTasks.filter(t => t.done).length}/${dailyTasks.length})</span></div><div class="section-body ${todayCollapsed.habits ? 'collapsed' : ''}">`;
-            dailyTasks.forEach(t => { const pc = getProjectColor(t.projectId); html += `<div class="sc ${t.done ? 'done-row' : ''}"><div class="stbar" style="background:${pc}"></div><div class="scb" data-task-id="${t.id}"><div class="chk${t.done ? ' done' : ''}"></div><span class="tname${t.done ? ' done' : ''}">${t.name}</span><span class="urg u-${urgClass(t.urgency)}">${urgLabel(t.urgency)}</span>${t.streak ? `<span class="streak">${t.streak}</span>` : ''}${t.done && isEarlyComplete(t) ? '<span class="early-complete">🎉提前完成</span>' : ''}<div class="task-actions"><button class="task-edit-btn" data-edit-task-id="${t.id}">✎</button><button class="task-del-btn" data-delete-task-id="${t.id}">✕</button></div></div></div>`; });
-            html += '</div>';
-            if (upcomingAll.length) {
-                html += `<div class="section-header" onclick="toggleSection(this)"><span class="chev ${todayCollapsed.upcoming ? '' : 'open'}">▶</span><span class="sl" style="margin:0">📅 近期将截止 (${upcomingDone}/${upcomingAll.length})</span></div><div class="section-body ${todayCollapsed.upcoming ? 'collapsed' : ''}">`;
-                upcomingAll.forEach(t => { const days = getDaysUntil(t.deadline); html += taskRowHTML(t, days === 1 ? '明天截止' : `${days} 天后截止`, false); });
-                html += '</div>';
+            if (dailyTasks.length) {
+                dailyTasks.forEach(t => { const pc = getProjectColor(t.projectId); html += `<div class="sc ${t.done ? 'done-row' : ''}"><div class="stbar" style="background:${pc}"></div><div class="scb" data-task-id="${t.id}"><div class="chk${t.done ? ' done' : ''}"></div><span class="tname${t.done ? ' done' : ''}">${t.name}</span><span class="urg u-${urgClass(t.urgency)}">${urgLabel(t.urgency)}</span>${t.streak ? `<span class="streak">${t.streak}</span>` : ''}${t.done && isEarlyComplete(t) ? '<span class="early-complete">🎉提前完成</span>' : ''}<div class="task-actions"><button class="task-edit-btn" data-edit-task-id="${t.id}">✎</button><button class="task-del-btn" data-delete-task-id="${t.id}">✕</button></div></div></div>`; });
+            } else {
+                html += '<div style="color:var(--text3);font-size:13px;padding:12px;">暂无每日习惯</div>';
             }
+            html += '</div>';
+            html += `<div class="section-header" onclick="toggleSection(this)"><span class="chev ${todayCollapsed.upcoming ? '' : 'open'}">▶</span><span class="sl" style="margin:0">📅 近期将截止 (${upcomingDone}/${upcomingAll.length})</span></div><div class="section-body ${todayCollapsed.upcoming ? 'collapsed' : ''}">`;
+            if (upcomingAll.length) {
+                upcomingAll.forEach(t => { const days = getDaysUntil(t.deadline); html += taskRowHTML(t, days === 1 ? '明天截止' : `${days} 天后截止`, false); });
+            } else {
+                html += '<div style="color:var(--text3);font-size:13px;padding:12px;">暂无近期截止任务</div>';
+            }
+            html += '</div>';
             html += `<div class="section-header" onclick="toggleSection(this)"><span class="chev ${todayCollapsed.unscheduled ? '' : 'open'}">▶</span><span class="sl" style="margin:0">📋 未排期任务 (${unscheduledDone}/${unscheduledAll.length})</span></div><div class="section-body ${todayCollapsed.unscheduled ? 'collapsed' : ''}">`;
-            unscheduledAll.forEach(t => html += taskRowHTML(t, '', false));
-            if (!unscheduledAll.length) html += '<div style="color:var(--text3);font-size:12px;padding:8px;">暂无未排期任务</div>';
+            if (unscheduledAll.length) {
+                unscheduledAll.forEach(t => html += taskRowHTML(t, '', false));
+            } else {
+                html += '<div style="color:var(--text3);font-size:13px;padding:12px;">暂无未排期任务</div>';
+            }
             html += '</div>';
             container.innerHTML = html;
         }
@@ -2029,17 +2073,18 @@
             const inProg = activeProjects.filter(p => p.status === '进行中' || p.status === '暂存').length;
             const comp = activeProjects.filter(p => p.status === '已完成').length;
             
-            // 筛选标签栏 (移动端友好)
-            let html = `<div class="filter-chips" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:12px;">
-                <div class="filter-chip${activeFilter === null ? ' active' : ''}" data-filter="null" style="flex-shrink:0;padding:6px 12px;border-radius:20px;background:var(--bg2);font-size:13px;cursor:pointer;">全部</div>
-                <div class="filter-chip${activeFilter === 'daily' ? ' active' : ''}" data-filter="daily" style="flex-shrink:0;padding:6px 12px;border-radius:20px;background:var(--bg2);font-size:13px;cursor:pointer;"># 每日</div>
-                <div class="filter-chip${activeFilter === 'important' ? ' active' : ''}" data-filter="important" style="flex-shrink:0;padding:6px 12px;border-radius:20px;background:var(--bg2);font-size:13px;cursor:pointer;"># 重要</div>
-                <div class="filter-chip${activeFilter === 'study' ? ' active' : ''}" data-filter="study" style="flex-shrink:0;padding:6px 12px;border-radius:20px;background:var(--bg2);font-size:13px;cursor:pointer;"># 学习</div>`;
-            activeProjects.forEach(p => {
-                html += `<div class="filter-chip${activeFilter === p.id ? ' active' : ''}" data-filter="${p.id}" style="flex-shrink:0;padding:6px 12px;border-radius:20px;background:var(--bg2);font-size:13px;cursor:pointer;">${p.name}</div>`;
-            });
-            html += '</div>';
+            // 筛选标签栏 (暂时注释掉)
+            // let html = `<div class="filter-chips" style="display:flex;gap:8px;overflow-x:auto;padding-bottom:8px;margin-bottom:12px;">
+            //     <div class="filter-chip${activeFilter === null ? ' active' : ''}" data-filter="null" style="flex-shrink:0;padding:6px 12px;border-radius:20px;background:var(--bg2);font-size:13px;cursor:pointer;">全部</div>
+            //     <div class="filter-chip${activeFilter === 'daily' ? ' active' : ''}" data-filter="daily" style="flex-shrink:0;padding:6px 12px;border-radius:20px;background:var(--bg2);font-size:13px;cursor:pointer;"># 每日</div>
+            //     <div class="filter-chip${activeFilter === 'important' ? ' active' : ''}" data-filter="important" style="flex-shrink:0;padding:6px 12px;border-radius:20px;background:var(--bg2);font-size:13px;cursor:pointer;"># 重要</div>
+            //     <div class="filter-chip${activeFilter === 'study' ? ' active' : ''}" data-filter="study" style="flex-shrink:0;padding:6px 12px;border-radius:20px;background:var(--bg2);font-size:13px;cursor:pointer;"># 学习</div>`;
+            // activeProjects.forEach(p => {
+            //     html += `<div class="filter-chip${activeFilter === p.id ? ' active' : ''}" data-filter="${p.id}" style="flex-shrink:0;padding:6px 12px;border-radius:20px;background:var(--bg2);font-size:13px;cursor:pointer;">${p.name}</div>`;
+            // });
+            // html += '</div>';
             
+            let html = '';
             html += `<div style="font-size:13px;color:var(--text2);margin-bottom:14px">${today.getMonth()+1}月 · ${inProg}个进行中 · ${comp}个已完成</div>`;
             
             const scMap = { '进行中': { bg: 'var(--green-bg)', cl: 'var(--green-t)' }, '暂存': { bg: 'var(--amber-bg)', cl: 'var(--amber-t)' }, '已完成': { bg: 'var(--blue-bg)', cl: 'var(--blue-t)' }, '未开始': { bg: 'var(--gray-bg)', cl: 'var(--gray-t)' }, '已归档': { bg: 'var(--gray-bg)', cl: 'var(--gray-t)' } };
@@ -2489,7 +2534,7 @@
         window.saveModal = function() {
             if (currentModalType === 'task' || currentModalType === 'edit-task') {
                 const name = document.getElementById('mf-task-name')?.value.trim(); if (!name) { toast('请输入任务名称'); return; }
-                const urgBtn = document.querySelector('#mb .uo.sh, #mb .uo.sm, #mb .uo.sl2');
+                const urgBtn = document.querySelector('#mb .uo.sh, #mb .uo.sm, #mb .uo.sl');
                 const urgency = urgBtn ? (urgBtn.classList.contains('sh') ? 'high' : urgBtn.classList.contains('sm') ? 'mid' : 'low') : 'mid';
                 const dateLabel = document.getElementById('mf-task-date-label');
                 const deadline = dateLabel?.textContent || null;
