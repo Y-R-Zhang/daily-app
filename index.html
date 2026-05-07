@@ -342,7 +342,6 @@
         .chk.done {
             background: var(--blue);
             border-color: var(--blue);
-            animation: chkBounce 0.4s ease;
         }
         .chk.done::after {
             content: '';
@@ -352,6 +351,11 @@
             border-bottom: 2px solid #fff;
             transform: rotate(-45deg) translateY(-1px);
             display: block;
+        }
+        .chk.completing {
+            animation: chkBounce 0.4s ease;
+        }
+        .chk.completing::after {
             animation: checkDraw 0.3s ease;
         }
         @keyframes chkBounce {
@@ -372,6 +376,8 @@
             text-overflow: ellipsis;
             white-space: nowrap;
             pointer-events: none;
+            line-height: 1.4;
+            max-width: calc(100% - 180px);
         }
         .tname.done {
             text-decoration: line-through;
@@ -1191,6 +1197,15 @@
             border-radius: 20px;
             white-space: nowrap;
         }
+        .overdue-detail {
+            background: var(--red-bg);
+            color: var(--red-t);
+            font-size: 10px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin: 4px 0;
+            display: block;
+        }
         .task-time {
             font-size: 9px;
             color: var(--text3);
@@ -1206,6 +1221,13 @@
             align-items: flex-end;
             gap: 8px;
             z-index: 100;
+            align-items: flex-end;
+        }
+        .fab-wrap:not(.open) {
+            pointer-events: none;
+        }
+        .fab-wrap:not(.open) .fab-main {
+            pointer-events: auto;
         }
         .fab-menu {
             display: flex;
@@ -1717,6 +1739,22 @@
             .sidebar {
                 display: none;
             }
+            .tname {
+                max-width: calc(100% - 260px);
+                flex-shrink: 1;
+            }
+            .task-actions {
+                min-width: 76px;
+                flex-shrink: 0;
+                margin-left: auto;
+            }
+            .urg {
+                padding: 2px 6px;
+                font-size: 10px;
+            }
+            .task-due {
+                font-size: 11px;
+            }
             .tab-strip {
                 border-radius: 0;
                 padding: 0 2px;
@@ -1879,7 +1917,7 @@
         function urgClass(u) { return u === 'high' ? 'high' : u === 'mid' ? 'mid' : 'low'; }
         function urgLabel(u) { return u === 'high' ? '紧急' : u === 'mid' ? '中' : '低'; }
         function ck(y, m, d) { return y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0'); }
-        function isOverdue(task) { if (!task.deadline) return false; if (task.done) return false; return new Date(task.deadline + 'T00:00:00') < today; }
+        function isOverdue(task) { if (!task.deadline) return false; return new Date(task.deadline + 'T00:00:00') < today; }
         function getOverdueDays(task) { if (!task.deadline) return 0; const dl = new Date(task.deadline + 'T00:00:00'); return Math.floor((today - dl) / (1000 * 60 * 60 * 24)); }
         function getDaysUntil(deadline) { if (!deadline) return Infinity; const dl = new Date(deadline + 'T00:00:00'); return Math.floor((dl - today) / (1000 * 60 * 60 * 24)); }
         function toast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.innerText = msg; document.body.appendChild(t); setTimeout(() => t.remove(), 2000); }
@@ -1920,7 +1958,15 @@
             const allTasks = [...db.tasks];
             const dailyTasks = allTasks.filter(t => t.daily);
             const nonDailyTasks = allTasks.filter(t => !t.daily);
-            const overdue = nonDailyTasks.filter(t => isOverdue(t) && !t.done);
+            const overdue = nonDailyTasks.filter(t => {
+                if (!isOverdue(t)) return false;
+                if (!t.done) return true;
+                if (t.completedAt) {
+                    const completedDate = new Date(t.completedAt);
+                    return completedDate.toDateString() === today.toDateString();
+                }
+                return false;
+            });
             const todayDueAll = nonDailyTasks.filter(t => t.deadline && new Date(t.deadline + 'T00:00:00').toDateString() === today.toDateString());
             const todayDueDone = todayDueAll.filter(t => t.done).length;
             const upcomingAll = nonDailyTasks.filter(t => t.deadline && !isOverdue(t) && getDaysUntil(t.deadline) > 0 && getDaysUntil(t.deadline) <= 7);
@@ -2016,7 +2062,7 @@
                 const isOpen = expandedProjects.has(p.id);
                 html += `<div class="pc"><div class="stbar" style="background:${p.color}"></div><div class="pbody"><div class="phdr" data-proj-id="${p.id}"><span class="chev${isOpen ? ' open' : ''}">▶</span><span class="pname">${p.name}</span><button class="spill" style="background:${sc.bg};color:${sc.cl}" data-proj-id="${p.id}">${p.status}</button><span class="pmeta">${pTasks.length} 任务</span><div class="task-actions"><button class="proj-edit-btn" data-edit-proj-id="${p.id}">✎</button><button class="proj-del-btn" data-delete-proj-id="${p.id}">✕</button></div></div><div class="ptasks${isOpen ? ' open' : ''}">`;
                 pTasks.forEach(t => { html += `<div class="tr${t.done ? ' done-row' : ''}" data-task-id="${t.id}"><div class="chk${t.done ? ' done' : ''}"></div><span class="tname${t.done ? ' done' : ''}">${t.name}</span><span class="urg u-${urgClass(t.urgency)}">${urgLabel(t.urgency)}</span><div class="task-actions"><button class="task-edit-btn" data-edit-task-id="${t.id}">✎</button><button class="task-del-btn" data-delete-task-id="${t.id}">✕</button></div></div>`; });
-                html += '</div></div></div>';
+                html += `<div class="add-task-to-proj" data-proj-id="${p.id}" style="padding:8px 12px;text-align:center;color:var(--text3);font-size:13px;cursor:pointer;border-top:0.5px solid var(--border);">+ 添加任务到 "${p.name}"</div></div></div></div>`;
             });
             
             const orphan = db.tasks.filter(t => !t.projectId && !t.daily && filterTask(t));
@@ -2036,8 +2082,28 @@
                     chip.style.color = '#fff';
                 }
             });
+            
+            // 添加项目快速添加任务按钮事件
+            const addTaskBtns = container.querySelectorAll('.add-task-to-proj');
+            addTaskBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const projId = this.dataset.projId;
+                    const proj = db.projects.find(p => p.id === projId);
+                    if (proj) {
+                        pendingCalKey = null;
+                        editingProjectId = projId;
+                        openModal('task');
+                        setTimeout(() => {
+                            const projLabel = document.getElementById('mf-task-proj-label');
+                            if (projLabel) {
+                                projLabel.textContent = proj.name;
+                            }
+                        }, 100);
+                    }
+                });
+            });
         }
-
+        
         function renderNotes() {
             const container = document.getElementById('view-notes');
             let html = '<div style="font-size:13px;color:var(--text2);margin-bottom:14px">旅途所得 · 记录思路与灵感</div><div class="ng">';
@@ -2048,7 +2114,7 @@
             html += '<div class="nc nc-new" style="border:0.5px dashed var(--border2)" onclick="openModal(\'note\')"><div style="font-size:20px;margin-bottom:4px">+</div>新建笔记</div></div>';
             container.innerHTML = html;
         }
-
+        
         window.showNoteImage = function(imgEl) {
             const overlay = document.createElement('div');
             overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:1000;display:flex;align-items:center;justify-content:center;cursor:zoom-out;';
@@ -2075,7 +2141,22 @@
             document.getElementById('od-m').textContent = overdueTasks.filter(t => t.urgency === 'mid').length;
             document.getElementById('od-l').textContent = overdueTasks.filter(t => t.urgency === 'low').length;
             const groups = {}; overdueTasks.forEach(t => { const k = getProjectName(t.projectId); if (!groups[k]) groups[k] = []; groups[k].push(t); });
-            let html = ''; Object.entries(groups).forEach(([pn, tasks]) => { html += `<div class="og"><div class="og-hdr"><span class="og-name">${pn}</span><span class="og-cnt">${tasks.length}项</span></div>`; tasks.forEach(t => { const ds = getOverdueDays(t); html += `<div class="oc"><div class="oc-bar"></div><div class="oc-body"><span class="oc-name">${t.name}</span><span class="urg u-${urgClass(t.urgency)}">${urgLabel(t.urgency)}</span><span class="oc-days">逾期 ${ds === 1 ? '昨天' : ds + '天前'}</span><button class="rescue" data-overdue-task-id="${t.id}">处理</button></div></div>`; }); html += '</div>'; });
+            let html = ''; Object.entries(groups).forEach(([pn, tasks]) => { 
+                html += `<div class="og"><div class="og-hdr"><span class="og-name">${pn}</span><span class="og-cnt">${tasks.length}项</span></div>`; 
+                tasks.forEach(t => { 
+                    const ds = getOverdueDays(t); 
+                    const pc = getProjectColor(t.projectId);
+                    const isCompleted = t.done;
+                    let overdueDetail = '';
+                    if (isCompleted && t.completedAt) {
+                        const completedDate = new Date(t.completedAt);
+                        const completedStr = `${completedDate.getFullYear()}-${String(completedDate.getMonth() + 1).padStart(2, '0')}-${String(completedDate.getDate()).padStart(2, '0')}`;
+                        overdueDetail = `<span class="od-completed-detail">实际${completedStr}完成</span>`;
+                    }
+                    html += `<div class="sc ${isCompleted ? 'done-row' : ''}"><div class="stbar" style="background:${pc}"></div><div class="scb" data-task-id="${t.id}"><div class="chk${isCompleted ? ' done' : ''}"></div><span class="tname${isCompleted ? ' done' : ''}">${t.name}</span><span class="urg u-${urgClass(t.urgency)}">${urgLabel(t.urgency)}</span><span class="od-days">逾期 ${ds === 1 ? '昨天' : ds + '天前'}</span>${overdueDetail}<div class="task-actions"><button class="task-edit-btn" data-edit-task-id="${t.id}">✎</button><button class="task-del-btn" data-delete-task-id="${t.id}">✕</button></div></div></div>`; 
+                }); 
+                html += '</div>'; 
+            });
             list.innerHTML = html;
         }
 
@@ -2132,7 +2213,24 @@
             db.projects.forEach(p => { const pt = db.tasks.filter(t => t.projectId === p.id); const d = pt.filter(t => t.done).length, ttl = pt.length; const p2 = ttl > 0 ? Math.round((d / ttl) * 100) : 0; const cc = p.color === 'var(--green)' ? 'green' : p.color === 'var(--amber)' ? 'amber' : p.color === 'var(--blue)' ? 'blue' : 'purple'; ph += `<div class="ach-proj-item"><div class="ach-proj-hdr"><span class="ach-proj-name">${p.name}</span><span class="ach-proj-pct">${d}/${ttl} · ${p2}%</span></div><div class="ach-prog-track"><div class="ach-prog-fill ${cc}" style="width:${p2}%"></div></div></div>`; });
             projSection.innerHTML = ph;
             const lc = document.getElementById('ach-completed-list');
-            if (!allDone.length) { lc.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:12px 0;">暂无已完成任务 ✨</div>'; } else { let lh = ''; allDone.forEach(t => { const pn = t.overdue ? (t.projectName || '无项目') : getProjectName(t.projectId); const ot = t.overdue ? '<span class="overdue-solved-tag">逾期解决</span>' : ''; const dt = t.completedAt ? `<span class="task-time">完成 ${formatTime(t.completedAt)}</span>` : ''; const ct = t.createdAt ? `<span class="task-time">创建 ${formatTime(t.createdAt)}</span>` : ''; lh += `<div class="completed-item"><span class="tname done">${t.name}</span><span class="urg u-${urgClass(t.urgency)}">${urgLabel(t.urgency)}</span>${ot}${ct}${dt}<span style="margin-left:auto;font-size:10px;color:var(--text3);">${pn}</span></div>`; }); lc.innerHTML = lh; }
+            if (!allDone.length) { 
+                lc.innerHTML = '<div style="color:var(--text3);font-size:12px;padding:12px 0;">暂无已完成任务 ✨</div>'; 
+            } else { 
+                let lh = ''; 
+                allDone.forEach(t => { 
+                    const pn = t.overdue ? (t.projectName || '无项目') : getProjectName(t.projectId); 
+                    let overdueInfo = '';
+                    if (t.overdueDays !== undefined && t.originalDeadline) {
+                        overdueInfo = `<span class="overdue-detail">原定${t.originalDeadline} · 逾期${t.overdueDays}天完成</span>`;
+                    } else if (t.overdue) {
+                        overdueInfo = '<span class="overdue-solved-tag">逾期解决</span>';
+                    }
+                    const dt = t.completedAt ? `<span class="task-time">完成 ${formatTime(t.completedAt)}</span>` : ''; 
+                    const ct = t.createdAt ? `<span class="task-time">创建 ${formatTime(t.createdAt)}</span>` : ''; 
+                    lh += `<div class="completed-item"><span class="tname done">${t.name}</span><span class="urg u-${urgClass(t.urgency)}">${urgLabel(t.urgency)}</span>${overdueInfo}${ct}${dt}<span style="margin-left:auto;font-size:10px;color:var(--text3);">${pn}</span></div>`; 
+                }); 
+                lc.innerHTML = lh; 
+            }
         }
 
         function renderDataView() {
@@ -2213,7 +2311,43 @@
         }
         function refreshAll() { syncAllCalTasks(); renderToday(); renderOverview(); renderNotes(); renderOverdue(); renderAchievements(); renderDataView(); renderSidebar(); renderCal(); }
 
-        function toggleTask(taskId) { const t = db.tasks.find(x => x.id === taskId); if (!t) return; t.done = !t.done; t.completedAt = t.done ? new Date().toISOString() : null; if (t.deadline) { const key = ck(new Date(t.deadline + 'T00:00:00').getFullYear(), new Date(t.deadline + 'T00:00:00').getMonth(), new Date(t.deadline + 'T00:00:00').getDate()); const ce = db.calTasks[key] ? db.calTasks[key].find(ct => ct.taskId === t.id) : null; if (ce) ce.done = t.done; updateCalView(key); } toast(t.done ? '任务已完成' : '任务已取消完成'); checkAchievements(); saveDB(); refreshAll(); }
+        function toggleTask(taskId) { 
+            const t = db.tasks.find(x => x.id === taskId); 
+            if (!t) return; 
+            t.done = !t.done; 
+            t.completedAt = t.done ? new Date().toISOString() : null; 
+            if (t.done && t.deadline) {
+                const deadlineDate = new Date(t.deadline + 'T00:00:00');
+                if (deadlineDate < today) {
+                    const daysOverdue = Math.floor((today - deadlineDate) / (1000 * 60 * 60 * 24));
+                    t.overdueDays = daysOverdue;
+                    t.originalDeadline = t.deadline;
+                }
+            }
+            if (t.deadline) { 
+                const key = ck(new Date(t.deadline + 'T00:00:00').getFullYear(), new Date(t.deadline + 'T00:00:00').getMonth(), new Date(t.deadline + 'T00:00:00').getDate()); 
+                const ce = db.calTasks[key] ? db.calTasks[key].find(ct => ct.taskId === t.id) : null; 
+                if (ce) ce.done = t.done; 
+                updateCalView(key); 
+            } 
+            toast(t.done ? '任务已完成' : '任务已取消完成'); 
+            checkAchievements(); 
+            saveDB(); 
+            refreshAll(); 
+        }
+        
+        function animateTaskComplete(taskId) {
+            const taskRows = document.querySelectorAll(`[data-task-id="${taskId}"]`);
+            taskRows.forEach(row => {
+                const chk = row.querySelector('.chk');
+                if (chk) {
+                    chk.classList.add('animating');
+                    setTimeout(() => {
+                        chk.classList.remove('animating');
+                    }, 500);
+                }
+            });
+        }
 
         function deleteTask(taskId) { if (!confirm('确定删除该任务吗？')) return; const t = db.tasks.find(x => x.id === taskId); if (t && t.deadline) { const key = ck(new Date(t.deadline + 'T00:00:00').getFullYear(), new Date(t.deadline + 'T00:00:00').getMonth(), new Date(t.deadline + 'T00:00:00').getDate()); if (db.calTasks[key]) { db.calTasks[key] = db.calTasks[key].filter(ct => ct.taskId !== taskId); if (!db.calTasks[key].length) delete db.calTasks[key]; } updateCalView(key); } db.tasks = db.tasks.filter(x => x.id !== taskId); saveDB(); refreshAll(); toast('任务已删除'); }
 
@@ -2247,7 +2381,7 @@
             const delBtn = target.closest('.task-del-btn'); if (delBtn && delBtn.dataset.deleteTaskId) { e.stopPropagation(); deleteTask(delBtn.dataset.deleteTaskId); return; }
             const projEditBtn = target.closest('.proj-edit-btn'); if (projEditBtn) { e.stopPropagation(); editProject(projEditBtn.dataset.editProjId); return; }
             const projDelBtn = target.closest('.proj-del-btn'); if (projDelBtn) { e.stopPropagation(); deleteProject(projDelBtn.dataset.deleteProjId); return; }
-            const taskRow = target.closest('[data-task-id]'); if (taskRow && !target.closest('.phdr') && !target.closest('.spill')) { e.stopPropagation(); toggleTask(taskRow.dataset.taskId); return; }
+            const taskRow = target.closest('[data-task-id]'); if (taskRow && !target.closest('.phdr') && !target.closest('.spill')) { e.stopPropagation(); const chk = taskRow.querySelector('.chk'); if (chk && !chk.classList.contains('done')) { chk.classList.add('completing'); setTimeout(() => { chk.classList.remove('completing'); }, 500); } toggleTask(taskRow.dataset.taskId); return; }
             const phdr = target.closest('.phdr'); if (phdr && !target.closest('.spill') && !target.closest('.proj-edit-btn') && !target.closest('.proj-del-btn')) { const pid = phdr.dataset.projId; if (pid) { expandedProjects.has(pid) ? expandedProjects.delete(pid) : expandedProjects.add(pid); phdr.querySelector('.chev').classList.toggle('open'); phdr.nextElementSibling.classList.toggle('open'); } return; }
             if (target.classList.contains('spill')) { const pid = target.dataset.projId; if (pid) { e.stopPropagation(); activePillBtn = target; activePillProjId = pid; const pop = document.getElementById('spop'); const r = target.getBoundingClientRect(); pop.style.top = (r.bottom + window.scrollY + 4) + 'px'; pop.style.left = Math.min(r.left, window.innerWidth - 138) + 'px'; pop.classList.add('show'); } return; }
             const cday = target.closest('.cday'); if (cday && cday.dataset.calKey) { selDay(cday, parseInt(cday.dataset.calNum), parseInt(cday.dataset.calMo), parseInt(cday.dataset.calYr), cday.dataset.calKey); return; }
@@ -2260,11 +2394,11 @@
 
         document.getElementById('spop').addEventListener('click', function(e) { const item = e.target.closest('.spop-it'); if (!item || !activePillProjId) return; const proj = db.projects.find(p => p.id === activePillProjId); if (!proj) return; proj.status = item.dataset.status; const scMap = { '未开始': { cl: 'var(--gray)', bg: 'var(--gray-bg)', tc: 'var(--gray-t)' }, '进行中': { cl: 'var(--green)', bg: 'var(--green-bg)', tc: 'var(--green-t)' }, '暂存': { cl: 'var(--amber)', bg: 'var(--amber-bg)', tc: 'var(--amber-t)' }, '已完成': { cl: 'var(--blue)', bg: 'var(--blue-bg)', tc: 'var(--blue-t)' }, '已归档': { cl: 'var(--gray)', bg: 'var(--gray-bg)', tc: 'var(--gray-t)' } }; const sc = scMap[proj.status]; if (activePillBtn) { activePillBtn.textContent = proj.status; activePillBtn.style.background = sc.bg; activePillBtn.style.color = sc.tc; const pc = activePillBtn.closest('.pc'); if (pc) pc.querySelector('.stbar').style.background = sc.cl; } document.getElementById('spop').classList.remove('show'); saveDB(); refreshAll(); });
 
-        document.getElementById('tab-strip').addEventListener('click', function(e) { const btn = e.target.closest('.tbtn'); if (!btn) return; document.querySelectorAll('.tbtn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); document.querySelectorAll('.view').forEach(v => v.classList.remove('active')); const ve = document.getElementById('view-' + btn.dataset.view); if (ve) ve.classList.add('active'); if (btn.dataset.view === 'calendar') renderCal(); refreshAll(); if (fabOpen) { fabOpen = false; document.getElementById('fm').classList.remove('open'); document.getElementById('fab').classList.remove('open'); } });
+        document.getElementById('tab-strip').addEventListener('click', function(e) { const btn = e.target.closest('.tbtn'); if (!btn) return; document.querySelectorAll('.tbtn').forEach(b => b.classList.remove('active')); btn.classList.add('active'); document.querySelectorAll('.view').forEach(v => v.classList.remove('active')); const ve = document.getElementById('view-' + btn.dataset.view); if (ve) ve.classList.add('active'); if (btn.dataset.view === 'calendar') renderCal(); refreshAll(); if (fabOpen) { fabOpen = false; document.getElementById('fw').classList.remove('open'); document.getElementById('fm').classList.remove('open'); document.getElementById('fab').classList.remove('open'); } });
 
-        window.toggleFab = function() { fabOpen = !fabOpen; document.getElementById('fm').classList.toggle('open', fabOpen); document.getElementById('fab').classList.toggle('open', fabOpen); };
-        window.closeFab = function() { fabOpen = false; document.getElementById('fm').classList.remove('open'); document.getElementById('fab').classList.remove('open'); };
-        document.addEventListener('click', function(e) { if (fabOpen && !e.target.closest('#fw')) { fabOpen = false; document.getElementById('fm').classList.remove('open'); document.getElementById('fab').classList.remove('open'); } });
+        window.toggleFab = function() { fabOpen = !fabOpen; document.getElementById('fw').classList.toggle('open', fabOpen); document.getElementById('fm').classList.toggle('open', fabOpen); document.getElementById('fab').classList.toggle('open', fabOpen); };
+        window.closeFab = function() { fabOpen = false; document.getElementById('fw').classList.remove('open'); document.getElementById('fm').classList.remove('open'); document.getElementById('fab').classList.remove('open'); };
+        document.addEventListener('click', function(e) { if (fabOpen && !e.target.closest('#fw')) { fabOpen = false; document.getElementById('fw').classList.remove('open'); document.getElementById('fm').classList.remove('open'); document.getElementById('fab').classList.remove('open'); } });
 
         window.calNav = function(dir) { cM += dir; if (cM > 11) { cM = 0; cY++; } else if (cM < 0) { cM = 11; cY--; } renderCal(); document.getElementById('cal-det').style.display = 'none'; selectedCalKey = null; };
         window.deleteCalTask = deleteCalTask;
@@ -2335,7 +2469,7 @@
                     });
                 }
                 if (type === 'edit-task' && id) { const task = db.tasks.find(t => t.id === id); if (task) { document.getElementById('mf-task-name').value = task.name; if (task.projectId) { selectedProjId = task.projectId; projLabel.textContent = getProjectName(task.projectId); } if (task.deadline) { selectedDate = task.deadline; dateLabel.textContent = task.deadline; } selectedDaily = task.daily ? '1' : '0'; dailyLabel.textContent = task.daily ? '是' : '否'; const urgBtns = document.querySelectorAll('#mb .uo'); urgBtns.forEach(b => { if (b.dataset.urg === task.urgency) { const colors = { 'high': { bg: 'var(--red-bg)', border: 'var(--red)', text: 'var(--red-t)' }, 'mid': { bg: 'var(--amber-bg)', border: 'var(--amber)', text: 'var(--amber-t)' }, 'low': { bg: 'var(--green-bg)', border: 'var(--green)', text: 'var(--green-t)' } }; const c = colors[task.urgency]; b.style.background = c.bg; b.style.borderColor = c.border; b.style.color = c.text; } }); } }
-                const nameInput = document.getElementById('mf-task-name'); if (nameInput) { nameInput.focus(); nameInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); saveModal(); } }); }
+                const nameInput = document.getElementById('mf-task-name'); if (nameInput) { nameInput.addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); saveModal(); } }); }
             }
             if (type === 'edit-project' && template && id) { const proj = getProject(id); if (proj) { document.getElementById('mf-proj-name').value = proj.name; document.getElementById('mf-proj-status').value = proj.status; } }
             if (type === 'note') { const textarea = document.getElementById('mf-note-content'); if (textarea) { textarea.focus(); textarea.addEventListener('keydown', function(e) { if (e.key === 'Enter' && e.ctrlKey) { e.preventDefault(); saveModal(); } }); } }
@@ -2358,7 +2492,7 @@
                 const dailyLabel = document.getElementById('mf-task-daily-label');
                 const daily = dailyLabel?.textContent === '是';
                 if (editingTaskId) { const t = db.tasks.find(x => x.id === editingTaskId); if (t) { const oldDeadline = t.deadline; t.name = name; t.urgency = urgency; t.projectId = projectId; t.deadline = deadline; t.daily = daily; syncTaskCal(t, oldDeadline); toast('任务已更新'); } }
-                else { const newTask = { id: genId(), name, urgency, projectId, done: false, daily, streak: '', createdAt: new Date().toISOString(), completedAt: null, deadline }; db.tasks.push(newTask); syncTaskCal(newTask, null); toast('任务已添加'); }
+                else { const newTask = { id: genId(), name, urgency, projectId: projectId || editingProjectId, done: false, daily, streak: '', createdAt: new Date().toISOString(), completedAt: null, deadline }; db.tasks.push(newTask); syncTaskCal(newTask, null); toast('任务已添加'); editingProjectId = null; }
                 editingTaskId = null; pendingCalKey = null; saveDB(); refreshAll(); if (selectedCalKey) { const [yr, mo, dt] = selectedCalKey.split('-'); const el = document.querySelector(`.cday[data-cal-key="${selectedCalKey}"]`); if (el) selDay(el, parseInt(dt), parseInt(mo) - 1, parseInt(yr), selectedCalKey); } closeModal();
             } else if (currentModalType === 'edit-project' && editingProjectId) { const name = document.getElementById('mf-proj-name')?.value.trim(); if (!name) { toast('请输入项目名称'); return; } const proj = getProject(editingProjectId); if (proj) { proj.name = name; proj.status = document.getElementById('mf-proj-status')?.value || proj.status; toast('项目已更新'); saveDB(); refreshAll(); } editingProjectId = null; closeModal();
             } else if (currentModalType === 'project') { const name = document.getElementById('mf-proj-name')?.value.trim(); if (!name) { toast('请输入项目名称'); return; } db.projects.push({ id: genId(), name, color: ['var(--green)', 'var(--amber)', 'var(--blue)', 'var(--purple)', 'var(--pink)', 'var(--red)'][Math.floor(Math.random() * 6)], status: document.getElementById('mf-proj-status')?.value || '未开始' }); saveDB(); refreshAll(); toast('项目已创建'); closeModal();
@@ -2507,29 +2641,6 @@
                 this.classList.remove('show');
             }
         });
-
-        // 修改紧急程度选择器样式
-        window.selectUrgency = function(btn, u) {
-            var sel = btn.closest('.urg-sel');
-            if (!sel) return;
-            var btns = sel.querySelectorAll('.uo');
-            for (var i = 0; i < btns.length; i++) {
-                var b = btns[i];
-                b.classList.remove('sh', 'sm', 'sl2');
-                b.style.background = 'var(--bg)';
-                b.style.borderColor = 'var(--border)';
-                b.style.color = 'var(--text)';
-            }
-            var colors = {
-                'high': { bg: 'var(--red-bg)', border: 'var(--red)', text: 'var(--red-t)' },
-                'mid': { bg: 'var(--amber-bg)', border: 'var(--amber)', text: 'var(--amber-t)' },
-                'low': { bg: 'var(--green-bg)', border: 'var(--green)', text: 'var(--green-t)' }
-            };
-            var c = colors[u];
-            btn.style.background = c.bg;
-            btn.style.borderColor = c.border;
-            btn.style.color = c.text;
-        };
 
         let noteImages = [];
 
