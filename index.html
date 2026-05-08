@@ -2029,6 +2029,13 @@
             const container = document.getElementById('view-overview');
             const activeProjects = db.projects.filter(p => p.status !== '已归档');
             const archivedProjects = db.projects.filter(p => p.status === '已归档');
+            const allProjects = [...activeProjects, ...archivedProjects];
+            const statusOrder = { '进行中': 0, '未开始': 1, '暂存': 2, '已完成': 3, '已归档': 4 };
+            allProjects.sort((a, b) => {
+                const orderA = statusOrder[a.status] !== undefined ? statusOrder[a.status] : 99;
+                const orderB = statusOrder[b.status] !== undefined ? statusOrder[b.status] : 99;
+                return orderA - orderB;
+            });
             const inProg = activeProjects.filter(p => p.status === '进行中' || p.status === '暂存').length;
             const comp = activeProjects.filter(p => p.status === '已完成').length;
             
@@ -2063,7 +2070,7 @@
                 return p.id === activeFilter;
             };
             
-            [...activeProjects, ...archivedProjects].forEach(p => {
+            allProjects.forEach(p => {
                 if (!filterProject(p)) return;
                 
                 const pTasks = db.tasks.filter(t => t.projectId === p.id && filterTask(t));
